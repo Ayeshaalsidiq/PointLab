@@ -1,6 +1,6 @@
 import { Car, Trophy, Zap, MessageCircle, ShoppingBag, Coffee, Star, Award, Crown, Gamepad2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import tier1Card from '../assets/tier1-card.png';
+import tier4Card from '../assets/tier4-card.png';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('Promo');
@@ -10,7 +10,7 @@ const Dashboard = () => {
     if (activeTab !== 'Promo') return;
     const interval = setInterval(() => {
       setActiveBanner(prev => (prev === 0 ? 1 : 0));
-    }, 2500); // Bergeser tiap 2.5 detik (1/2 detik terlalu cepat untuk dibaca, 2.5 sangat pas)
+    }, 2500); 
     return () => clearInterval(interval);
   }, [activeTab]);
 
@@ -40,22 +40,22 @@ const Dashboard = () => {
               <div style={{ background: '#94A3B8', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <span style={{ fontSize: '10px', color: 'white' }}>P</span>
               </div>
-              <span style={{ fontWeight: 600 }}>500</span>
+              <span style={{ fontWeight: 600 }}>15,200</span>
               <span>·</span>
-              <span style={{ fontWeight: 600 }}>Anak Kos</span>
+              <span style={{ fontWeight: 600, color: '#9333EA' }}>Sultan Kampus</span>
             </div>
             
             <div style={{ marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '0.75rem', color: '#64748B', fontWeight: 500, lineHeight: 1.4, paddingRight: '0.5rem' }}>
-              500 poin lagi menuju Sobat Jajan
+              Anda telah mencapai tingkat tertinggi!
             </div>
             
             {/* Progress Bar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
-              <span style={{ fontSize: '0.65rem', color: '#64748B', fontWeight: 600, whiteSpace: 'nowrap' }}>Anak Kos</span>
+              <span style={{ fontSize: '0.65rem', color: '#9333EA', fontWeight: 700, whiteSpace: 'nowrap' }}>Sultan Kampus</span>
               <div style={{ height: '4px', background: '#E2E8F0', borderRadius: '2px', flex: 1, position: 'relative', minWidth: '40px' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: '50%', background: 'linear-gradient(90deg, #1A1B27 0%, #FF7A03 100%)', borderRadius: '2px' }}></div>
+                <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: '100%', background: 'linear-gradient(90deg, #FF7A03 0%, #F59E0B 100%)', borderRadius: '2px' }}></div>
               </div>
-              <span style={{ fontSize: '0.65rem', color: '#94A3B8', fontWeight: 600, whiteSpace: 'nowrap' }}>Sobat Jajan</span>
+              <span style={{ fontSize: '0.65rem', color: '#F59E0B', fontWeight: 700, whiteSpace: 'nowrap' }}>MAX</span>
             </div>
           </div>
 
@@ -63,8 +63,8 @@ const Dashboard = () => {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
             <div style={{ marginBottom: '1rem', width: '95px', height: '95px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <img 
-                src={tier1Card} 
-                alt="Tier 1 Badge" 
+                src={tier4Card} 
+                alt="Tier 4 Badge" 
                 style={{ 
                   width: '95px', 
                   height: '95px', 
