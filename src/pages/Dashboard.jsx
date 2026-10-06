@@ -1,10 +1,13 @@
-import { Car, Trophy, Zap, MessageCircle, ShoppingBag, Coffee, Star, Award, Crown, Gamepad2 } from 'lucide-react';
+import { Trophy, Zap, MessageCircle, ShoppingBag, Coffee, Gamepad2, QrCode, Ticket, Gift, History, Crown } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import tier4Card from '../assets/tier4-card.png';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Promo');
   const [activeBanner, setActiveBanner] = useState(0);
+  const [showQRModal, setShowQRModal] = useState(false);
 
   useEffect(() => {
     if (activeTab !== 'Promo') return;
@@ -86,29 +89,29 @@ const Dashboard = () => {
 
       {/* Quick Actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0.5rem 2.5rem 0.5rem', overflowX: 'auto', flexShrink: 0 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8' }}>
-            <Car size={20} />
+        <div onClick={() => navigate('/redeem')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8', background: 'rgba(255,255,255,0.05)' }}>
+            <Gift size={20} />
           </div>
-          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>Taxi<br/>package</span>
+          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>Tukar<br/>Poin</span>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8' }}>
+        <div onClick={() => navigate('/tier-details')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8', background: 'rgba(255,255,255,0.05)' }}>
             <Trophy size={20} />
           </div>
-          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>Member<br/>package</span>
+          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>Member<br/>Package</span>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8' }}>
-            <Zap size={20} />
+        <div onClick={() => setShowQRModal(true)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8', background: 'rgba(255,255,255,0.05)' }}>
+            <QrCode size={20} />
           </div>
-          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>Special<br/>express</span>
+          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>QR</span>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8' }}>
-            <MessageCircle size={20} />
+        <div onClick={() => navigate('/history')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8', background: 'rgba(255,255,255,0.05)' }}>
+            <History size={20} />
           </div>
-          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>Quick<br/>answer</span>
+          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>Riwayat<br/>Poin</span>
         </div>
       </div>
 
@@ -371,6 +374,20 @@ const Dashboard = () => {
         </div>
       </div>
       </div>
+
+      {/* QR Modal */}
+      {showQRModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
+          <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <h3 style={{ margin: '0 0 1rem 0', color: '#1E293B', fontSize: '1.25rem', fontWeight: 700 }}>QR Member</h3>
+            <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #E2E8F0' }}>
+              <QrCode size={180} color="#1E293B" />
+            </div>
+            <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#64748B', textAlign: 'center', lineHeight: 1.5 }}>Tunjukkan kode QR ini ke kasir untuk mengumpulkan poin atau klaim diskon.</p>
+            <button onClick={() => setShowQRModal(false)} style={{ width: '100%', padding: '0.85rem', background: '#1E293B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Tutup</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
