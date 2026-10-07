@@ -1,15 +1,25 @@
 import { Crown, CheckCircle2, ShieldCheck, Settings, LogOut, ChevronRight, Wallet, Clock, HelpCircle, QrCode, Star, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useUser } from '../context/UserContext';
 
 const Membership = () => {
   const navigate = useNavigate();
+  const { points, tierInfo } = useUser();
   const [showQRModal, setShowQRModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showBenefitModal, setShowBenefitModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [profileName, setProfileName] = useState('Blair Nguyen');
   const [profilePhone, setProfilePhone] = useState('+62 812-3456-7890');
+  const [profileImage, setProfileImage] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setProfileImage(URL.createObjectURL(e.target.files[0]));
+    }
+  };
 
   return (
     <div style={{ background: '#1A1B27', flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
@@ -17,8 +27,12 @@ const Membership = () => {
       {/* Header Profile Area */}
       <div style={{ padding: '2rem 1.5rem 1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
-            <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>{profileName.charAt(0)}</span>
+          <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+            {profileImage ? (
+              <img src={profileImage} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>{profileName.charAt(0)}</span>
+            )}
           </div>
           <div>
             <h1 style={{ color: 'white', fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.25rem 0' }}>{profileName}</h1>
@@ -33,10 +47,10 @@ const Membership = () => {
       {/* Floating Membership Card */}
       <div style={{ padding: '1rem 1.5rem', flexShrink: 0, position: 'relative', zIndex: 10 }}>
         <div style={{ 
-          background: 'linear-gradient(135deg, #60A5FA 0%, #2563EB 100%)', 
+          background: `linear-gradient(135deg, ${tierInfo.gradient[0]} 0%, ${tierInfo.gradient[1]} 100%)`, 
           borderRadius: '24px', 
           padding: '1.5rem',
-          boxShadow: '0 15px 30px rgba(37, 99, 235, 0.25)',
+          boxShadow: `0 15px 30px ${tierInfo.colors.primary}40`,
           position: 'relative',
           overflow: 'hidden',
           display: 'flex',
@@ -52,21 +66,25 @@ const Membership = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
             <div>
               <span style={{ background: 'rgba(255,255,255,0.25)', padding: '0.3rem 0.75rem', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 700, color: 'white', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                Campus Star
+                {tierInfo.name}
               </span>
             </div>
             <div style={{ textAlign: 'right' }}>
               <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>Total Poin</p>
-              <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 800, color: 'white' }}>24.500</h2>
+              <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 800, color: 'white' }}>{points.toLocaleString('id-ID')}</h2>
             </div>
           </div>
 
           <div style={{ position: 'relative', zIndex: 1, marginTop: '2rem' }}>
-            <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', fontWeight: 500 }}>Progress ke Hall of Fame</p>
+            <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', fontWeight: 500 }}>
+              {tierInfo.id === 3 ? 'Tingkat Keanggotaan Tertinggi!' : `Progress ke ${tierInfo.nextTier}`}
+            </p>
             <div style={{ height: '6px', background: 'rgba(255,255,255,0.3)', borderRadius: '99px', overflow: 'hidden' }}>
-              <div style={{ width: '70%', height: '100%', background: 'white', borderRadius: '99px' }}></div>
+              <div style={{ width: `${tierInfo.progress}%`, height: '100%', background: 'white', borderRadius: '99px' }}></div>
             </div>
-            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.7rem', color: 'rgba(255,255,255,0.9)' }}>10.500 poin lagi menuju tier berikutnya!</p>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.7rem', color: 'rgba(255,255,255,0.9)' }}>
+              {tierInfo.id === 3 ? 'Terima kasih telah menjadi pelanggan setia.' : `${(tierInfo.nextPoints - points).toLocaleString('id-ID')} poin lagi menuju tier berikutnya!`}
+            </p>
           </div>
         </div>
       </div>
@@ -177,14 +195,19 @@ const Membership = () => {
             {/* Edit Profile Picture */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ position: 'relative', width: '80px', height: '80px', marginBottom: '0.75rem' }}>
-                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white', fontSize: '2rem', fontWeight: 700, boxShadow: '0 8px 20px rgba(59, 130, 246, 0.3)' }}>
-                  {profileName.charAt(0)}
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white', fontSize: '2rem', fontWeight: 700, boxShadow: '0 8px 20px rgba(59, 130, 246, 0.3)', overflow: 'hidden' }}>
+                  {profileImage ? (
+                    <img src={profileImage} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    profileName.charAt(0)
+                  )}
                 </div>
-                <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'white', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', cursor: 'pointer', border: '3px solid white', color: '#3B82F6', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                <label htmlFor="profile-upload" style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'white', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', cursor: 'pointer', border: '3px solid white', color: '#3B82F6', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
                   <Camera size={16} strokeWidth={2.5} />
-                </div>
+                </label>
+                <input id="profile-upload" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageChange} />
               </div>
-              <span style={{ fontSize: '0.8rem', color: '#3B82F6', fontWeight: 600, cursor: 'pointer' }}>Ganti Foto</span>
+              <label htmlFor="profile-upload" style={{ fontSize: '0.8rem', color: '#3B82F6', fontWeight: 600, cursor: 'pointer' }}>Ganti Foto</label>
             </div>
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#64748B', fontWeight: 500 }}>Nama Lengkap</label>
@@ -196,7 +219,7 @@ const Membership = () => {
             </div>
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button onClick={() => setShowEditProfileModal(false)} style={{ flex: 1, padding: '0.85rem', background: '#F1F5F9', color: '#64748B', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Batal</button>
-              <button onClick={() => setShowEditProfileModal(false)} style={{ flex: 1, padding: '0.85rem', background: '#3B82F6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)' }}>Simpan</button>
+              <button onClick={() => { setShowEditProfileModal(false); setShowToast(true); setTimeout(() => setShowToast(false), 3000); }} style={{ flex: 1, padding: '0.85rem', background: '#3B82F6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)' }}>Simpan</button>
             </div>
           </div>
         </div>
@@ -208,28 +231,22 @@ const Membership = () => {
           <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
             <h3 style={{ margin: '0 0 1.5rem 0', color: '#1E293B', textAlign: 'center', fontSize: '1.25rem', fontWeight: 700 }}>Keuntungan Membership</h3>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: 'linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)', padding: '1rem', borderRadius: '16px' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: '#3B82F6', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)' }}><Star size={28}/></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: `linear-gradient(135deg, ${tierInfo.colors.secondary} 0%, ${tierInfo.colors.secondaryGrad} 100%)`, padding: '1rem', borderRadius: '16px' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: tierInfo.colors.primary, color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: `0 4px 10px ${tierInfo.colors.primary}40` }}><Star size={28}/></div>
               <div>
-                <h4 style={{ margin: '0 0 0.25rem 0', color: '#1E40AF', fontSize: '1.1rem', fontWeight: 800 }}>Campus Star</h4>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: '#2563EB', fontWeight: 600 }}>Tier Anda Saat Ini</p>
+                <h4 style={{ margin: '0 0 0.25rem 0', color: tierInfo.colors.text, fontSize: '1.1rem', fontWeight: 800 }}>{tierInfo.name}</h4>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: tierInfo.colors.textLight, fontWeight: 600 }}>{tierInfo.id === 3 ? 'Tier Tertinggi' : 'Tier Anda Saat Ini'}</p>
               </div>
             </div>
             
-            <h5 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: '#1E293B', fontWeight: 700 }}>Keuntungan Tier Ini:</h5>
+            <h5 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: '#1E293B', fontWeight: 700 }}>{tierInfo.id === 3 ? 'Keuntungan Eksklusif Tier Ini:' : 'Keuntungan Tier Ini:'}</h5>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.75rem' }}>
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                <div style={{ color: '#3B82F6', marginTop: '2px' }}><Star size={16} /></div>
-                <span style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.4 }}>Akses pengumpulan poin dasar di setiap transaksi.</span>
-              </div>
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                <div style={{ color: '#3B82F6', marginTop: '2px' }}><Star size={16} /></div>
-                <span style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.4 }}>Promo diskon bulanan reguler di seluruh kantin.</span>
-              </div>
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                <div style={{ color: '#3B82F6', marginTop: '2px' }}><Star size={16} /></div>
-                <span style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.4 }}>Akses ke mini game untuk mengumpulkan koin.</span>
-              </div>
+              {tierInfo.benefits.map((benefit, idx) => (
+                <div key={idx} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                  <div style={{ color: tierInfo.colors.primary, marginTop: '2px' }}><Star size={16} /></div>
+                  <span style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.4 }}>{benefit}</span>
+                </div>
+              ))}
             </div>
 
             <button onClick={() => setShowBenefitModal(false)} style={{ width: '100%', padding: '0.85rem', background: '#1E293B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Tutup</button>
@@ -284,6 +301,28 @@ const Membership = () => {
             </div>
 
             <button onClick={() => setShowHelpModal(false)} style={{ width: '100%', padding: '0.85rem', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Kembali</button>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal Notification */}
+      {showToast && (
+        <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem' }}>
+          <div style={{ background: 'white', borderRadius: '28px', padding: '2.5rem 2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+            
+            <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
+              <div style={{ position: 'absolute', inset: '-10px', background: '#10B981', borderRadius: '50%', filter: 'blur(15px)', opacity: 0.3 }}></div>
+              <div style={{ position: 'relative', width: '80px', height: '80px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)' }}>
+                <CheckCircle2 size={40} color="white" strokeWidth={2.5} />
+              </div>
+            </div>
+
+            <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.4rem', fontWeight: 800, textAlign: 'center', letterSpacing: '-0.5px' }}>Berhasil!</h3>
+            <p style={{ margin: '0 0 2rem 0', color: '#64748B', fontSize: '0.85rem', textAlign: 'center', lineHeight: 1.5 }}>Pengaturan profil Anda berhasil disimpan.</p>
+            
+            <button onClick={() => setShowToast(false)} style={{ width: '100%', padding: '0.9rem', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#334155', borderRadius: '14px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}>
+              Tutup
+            </button>
           </div>
         </div>
       )}

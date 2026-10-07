@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutGrid, TicketPercent, CircleUser, LogOut, Hexagon } from 'lucide-react';
+import { LayoutGrid, Tag, CircleUser, LogOut, Hexagon, ShoppingBag } from 'lucide-react';
 
 const Sidebar = () => {
   return (
@@ -18,9 +18,13 @@ const Sidebar = () => {
           <LayoutGrid size={22} strokeWidth={1.5} />
           <span>Beranda</span>
         </NavLink>
-        <NavLink to="/redeem" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-          <TicketPercent size={22} strokeWidth={1.5} />
+        <NavLink to="/promo" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+          <Tag size={22} strokeWidth={1.5} />
           <span>Promo</span>
+        </NavLink>
+        <NavLink to="/redeem" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+          <ShoppingBag size={22} strokeWidth={1.5} />
+          <span>Redeem</span>
         </NavLink>
         <NavLink to="/membership" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
           <CircleUser size={22} strokeWidth={1.5} />

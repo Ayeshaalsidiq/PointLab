@@ -1,17 +1,44 @@
 import { useState } from 'react';
 import { Gift, Ticket, Zap, CheckCircle2, ChevronRight, TicketPercent } from 'lucide-react';
+import { useUser } from '../context/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 const Redeem = () => {
+  const navigate = useNavigate();
   const [promoCode, setPromoCode] = useState('');
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [showToast, setShowToast] = useState(false);
+  const { points, setPoints, redeemedVouchers, setRedeemedVouchers } = useUser();
+
+  const handleRedeem = () => {
+    if (points >= selectedVoucher.points) {
+      setPoints(points - selectedVoucher.points);
+      
+      const { icon, ...voucherWithoutIcon } = selectedVoucher;
+      
+      const newVoucher = {
+        ...voucherWithoutIcon,
+        redeemId: Date.now().toString(),
+        code: Math.random().toString(36).substring(2, 10).toUpperCase(),
+        redeemedAt: new Date().toISOString(),
+        expired: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('id-ID'), // 30 hari dari sekarang
+        stok: 1
+      };
+      
+      setRedeemedVouchers([...redeemedVouchers, newVoucher]);
+      setSelectedVoucher(null);
+      setShowToast(true);
+    } else {
+      alert('Poin Anda tidak mencukupi untuk menukarkan voucher ini.');
+    }
+  };
 
   const vouchers = [
-    { id: 1, title: 'Voucher Kantin Rp 50.000', points: 5000, type: 'Makanan', icon: <Gift size={24} />, color: '#F59E0B' },
-    { id: 2, title: 'Cashback Point 20%', points: 2500, type: 'Cashback', icon: <Zap size={24} />, color: '#10B981' },
-    { id: 3, title: 'Tiket Seminar Gratis', points: 7500, type: 'Edukasi', icon: <Ticket size={24} />, color: '#3B82F6' },
-    { id: 4, title: 'Voucher Print 100 Lembar', points: 3500, type: 'Fasilitas', icon: <Gift size={24} />, color: '#8B5CF6' },
-    { id: 5, title: 'Parkir Gratis 1 Bulan', points: 10000, type: 'Fasilitas', icon: <CheckCircle2 size={24} />, color: '#EC4899' },
+    { id: 1, title: 'Voucher Kantin Rp 50.000', points: 5000, type: 'Makanan', jenis: 'Potongan Harga', icon: <Gift size={24} />, color: '#F59E0B' },
+    { id: 2, title: 'Cashback Point 20%', points: 2500, type: 'Cashback', jenis: 'Diskon', icon: <Zap size={24} />, color: '#10B981' },
+    { id: 3, title: 'Tiket Seminar Gratis', points: 7500, type: 'Edukasi', jenis: 'Free Produk', icon: <Ticket size={24} />, color: '#3B82F6' },
+    { id: 4, title: 'Voucher Print 100 Lembar', points: 3500, type: 'Fasilitas', jenis: 'Free Produk', icon: <Gift size={24} />, color: '#8B5CF6' },
+    { id: 5, title: 'Parkir Gratis 1 Bulan', points: 10000, type: 'Fasilitas', jenis: 'Free Produk', icon: <CheckCircle2 size={24} />, color: '#EC4899' },
   ];
 
   return (
@@ -39,10 +66,12 @@ const Redeem = () => {
               <div style={{ background: '#FF7A03', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <span style={{ fontSize: '12px', color: 'white', fontWeight: 'bold' }}>P</span>
               </div>
-              <span style={{ color: 'white', fontSize: '1.5rem', fontWeight: 700 }}>24.500</span>
+              <span style={{ color: 'white', fontSize: '1.5rem', fontWeight: 700 }}>{points.toLocaleString('id-ID')}</span>
             </div>
           </div>
-          <button style={{ 
+          <button 
+            onClick={() => navigate('/history')}
+            style={{ 
             background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)',
             color: 'white', border: 'none', padding: '0.6rem 1.2rem',
             borderRadius: '99px', fontSize: '0.85rem', fontWeight: 600,
@@ -172,7 +201,7 @@ const Redeem = () => {
             
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button onClick={() => setSelectedVoucher(null)} style={{ flex: 1, padding: '0.85rem', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Batal</button>
-              <button onClick={() => { setSelectedVoucher(null); setShowToast(true); setTimeout(() => setShowToast(false), 3000); }} style={{ flex: 1, padding: '0.85rem', background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 4px 10px rgba(255, 122, 3, 0.3)' }}>Tukar</button>
+              <button onClick={handleRedeem} style={{ flex: 1, padding: '0.85rem', background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 4px 10px rgba(255, 122, 3, 0.3)' }}>Tukar</button>
             </div>
           </div>
         </div>
@@ -192,7 +221,7 @@ const Redeem = () => {
             </div>
 
             <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.4rem', fontWeight: 800, textAlign: 'center', letterSpacing: '-0.5px' }}>Redeem Berhasil!</h3>
-            <p style={{ margin: '0 0 2rem 0', color: '#64748B', fontSize: '0.85rem', textAlign: 'center', lineHeight: 1.5 }}>Voucher Anda telah aktif dan dapat dilihat pada halaman Riwayat.</p>
+            <p style={{ margin: '0 0 2rem 0', color: '#64748B', fontSize: '0.85rem', textAlign: 'center', lineHeight: 1.5 }}>Voucher Anda telah aktif dan dapat dilihat pada halaman Promo.</p>
             
             <button onClick={() => setShowToast(false)} style={{ width: '100%', padding: '0.9rem', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#334155', borderRadius: '14px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}>
               Lanjutkan

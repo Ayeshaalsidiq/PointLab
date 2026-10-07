@@ -1,10 +1,11 @@
 import { Trophy, Zap, MessageCircle, ShoppingBag, Coffee, Gamepad2, QrCode, Ticket, Gift, History, Crown, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import tier3Card from '../assets/tier3-card.png';
+import { useUser } from '../context/UserContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { points, tierInfo } = useUser();
   const [activeTab, setActiveTab] = useState('Promo');
   const [activeBanner, setActiveBanner] = useState(0);
   const [showQRModal, setShowQRModal] = useState(false);
@@ -42,49 +43,40 @@ const Dashboard = () => {
               Blair Nguyen
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#64748B', fontSize: '0.875rem' }}>
-              <div style={{ background: '#94A3B8', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ background: tierInfo.colors.primary, width: '16px', height: '16px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
                 <span style={{ fontSize: '10px', color: 'white' }}>P</span>
               </div>
-              <span style={{ fontWeight: 600 }}>24.500</span>
-              <span>·</span>
-              <span style={{ fontWeight: 600, color: '#3B82F6' }}>Campus Star</span>
+              <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{points.toLocaleString('id-ID')}</span>
             </div>
             
-            <div style={{ marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '0.75rem', color: '#64748B', fontWeight: 500, lineHeight: 1.4, paddingRight: '0.5rem' }}>
-              10.500 poin lagi menuju tingkat tertinggi!
+            <div style={{ marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '0.75rem', color: tierInfo.colors.primary, fontWeight: 500, lineHeight: 1.4, paddingRight: '0.5rem' }}>
+              {tierInfo.id === 3 ? 'Selamat! Anda telah mencapai tingkat tertinggi.' : `${(tierInfo.nextPoints - points).toLocaleString('id-ID')} poin lagi menuju tingkat selanjutnya!`}
             </div>
             
             {/* Progress Bar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
-              <span style={{ fontSize: '0.65rem', color: '#3B82F6', fontWeight: 700, whiteSpace: 'nowrap' }}>Campus Star</span>
-              <div style={{ height: '4px', background: '#E2E8F0', borderRadius: '2px', flex: 1, position: 'relative', minWidth: '40px' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, height: '70%', width: '70%', background: 'linear-gradient(90deg, #FF7A03 0%, #F59E0B 100%)', borderRadius: '2px' }}></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%' }}>
+              <span style={{ fontSize: '0.7rem', color: tierInfo.colors.textLight, fontWeight: 700, whiteSpace: 'nowrap' }}>{tierInfo.name}</span>
+              <div style={{ height: '6px', background: '#E2E8F0', borderRadius: '3px', flex: 1, position: 'relative', minWidth: '40px', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${tierInfo.progress}%`, background: `linear-gradient(90deg, ${tierInfo.gradientDashboard[0]} 0%, ${tierInfo.gradientDashboard[1]} 100%)`, borderRadius: '3px' }}></div>
               </div>
-              <span style={{ fontSize: '0.65rem', color: '#9333EA', fontWeight: 700, whiteSpace: 'nowrap' }}>Hall of Fame</span>
+              <span style={{ fontSize: '0.7rem', color: tierInfo.id === 3 ? tierInfo.gradientDashboard[1] : '#F59E0B', fontWeight: 700, whiteSpace: 'nowrap' }}>{tierInfo.nextTier}</span>
             </div>
           </div>
 
-          {/* Bagian Kanan (Gambar 3D & Tombol Upgrade) */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-            <div style={{ marginBottom: '1rem', width: '95px', height: '95px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          {/* Bagian Kanan (Gambar 3D) */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transform: 'translateY(-12px)' }}>
+            <div style={{ width: '95px', height: '95px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <img 
-                src={tier3Card} 
-                alt="Tier 3 Badge" 
+                src={tierInfo.card} 
+                alt="Tier 1 Badge" 
                 style={{ 
-                  width: '95px', 
-                  height: '95px', 
+                  width: '100%', 
+                  height: '100%', 
                   objectFit: 'contain',
-                  filter: 'drop-shadow(0px 8px 12px rgba(0,0,0,0.15))'
+                  filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.2))'
                 }} 
               />
             </div>
-            <button style={{ 
-              background: '#333A4A', color: 'white', padding: '0.6rem 1.25rem', 
-              borderRadius: '99px', fontSize: '0.85rem', border: 'none', fontWeight: 500,
-              boxShadow: '0 4px 10px rgba(0,0,0,0.2)', cursor: 'pointer', whiteSpace: 'nowrap'
-            }}>
-              Upgrade
-            </button>
           </div>
         </div>
       </div>

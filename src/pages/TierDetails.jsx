@@ -1,6 +1,7 @@
 import { ArrowLeft, Wallet, Gamepad2, Clock, MessageCircle, Coffee, ShoppingBag, Gift, Zap, Car, Trophy, Percent, CupSoda, Utensils, ChefHat, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useUser } from '../context/UserContext';
 import tier1Card from '../assets/tier1-card.png';
 import tier2Card from '../assets/tier2-card.png';
 import tier3Card from '../assets/tier3-card.png';
@@ -82,8 +83,9 @@ const tiersData = [
 
 const TierDetails = () => {
   const navigate = useNavigate();
-  const [activeTier, setActiveTier] = useState(2); 
-  const [animKey, setAnimKey] = useState(2);
+  const { tierInfo } = useUser();
+  const [activeTier, setActiveTier] = useState(tierInfo.id); 
+  const [animKey, setAnimKey] = useState(tierInfo.id);
   const currentTier = tiersData[activeTier];
 
   const handleTierChange = (index) => {
