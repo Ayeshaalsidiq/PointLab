@@ -8,6 +8,8 @@
 
 - 📊 **Dashboard Interaktif**: Halaman beranda yang menampilkan *banner* promosi dengan *auto-sliding carousel*, kartu progres keanggotaan, aksi cepat (*Quick Actions*), serta ringkasan aktivitas pengguna.
 - 🎁 **Promo & Penukaran (Redeem)**: Katalog *voucher* terintegrasi di mana pengguna dapat menukarkan poin loyalitas mereka dengan berbagai diskon, *cashback*, hingga tiket hiburan. Dilengkapi dengan kolom penukaran *Promo Code* berdesain bersih.
+- 🎟️ **Manajemen Voucher (Promo Detail)**: Pengalaman layar penuh (fullscreen) bergaya premium saat membuka detail voucher yang diklaim. Lengkap dengan tampilan QR Code, kode unik, masa berlaku, serta syarat & ketentuan penukaran.
+- 💾 **Sistem Penyimpanan Lokal (Local Storage)**: Poin pengguna dan riwayat klaim voucher secara otomatis disimpan dengan aman di memori *browser*. Data Anda tidak akan hilang meskipun halaman di-*refresh* atau browser ditutup.
 - 💳 **Profil Premium (Membership)**: Menampilkan kartu keanggotaan *floating* (melayang) bergaya 3D yang sangat premium, memperlihatkan status *Tier* (misal: Sobat Jajan, Duta Kantin, dll), saldo poin, dan menu pengaturan ala iOS.
 - 📱 **Mobile-First Design**: Struktur kode HTML/CSS dirancang khusus agar merespons secara sempurna dan presisi pada perangkat ponsel pintar (tanpa area kosong terpotong).
 
