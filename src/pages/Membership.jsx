@@ -1,4 +1,4 @@
-import { Crown, CheckCircle2, ShieldCheck, Settings, LogOut, ChevronRight, Wallet, Clock, HelpCircle, QrCode, Star } from 'lucide-react';
+import { Crown, CheckCircle2, ShieldCheck, Settings, LogOut, ChevronRight, Wallet, Clock, HelpCircle, QrCode, Star, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
@@ -33,10 +33,10 @@ const Membership = () => {
       {/* Floating Membership Card */}
       <div style={{ padding: '1rem 1.5rem', flexShrink: 0, position: 'relative', zIndex: 10 }}>
         <div style={{ 
-          background: 'linear-gradient(135deg, #FFB347 0%, #FF7B00 100%)', 
+          background: 'linear-gradient(135deg, #60A5FA 0%, #2563EB 100%)', 
           borderRadius: '24px', 
           padding: '1.5rem',
-          boxShadow: '0 15px 30px rgba(255, 123, 0, 0.25)',
+          boxShadow: '0 15px 30px rgba(37, 99, 235, 0.25)',
           position: 'relative',
           overflow: 'hidden',
           display: 'flex',
@@ -52,7 +52,7 @@ const Membership = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
             <div>
               <span style={{ background: 'rgba(255,255,255,0.25)', padding: '0.3rem 0.75rem', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 700, color: 'white', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                Sobat Jajan
+                Campus Star
               </span>
             </div>
             <div style={{ textAlign: 'right' }}>
@@ -62,11 +62,11 @@ const Membership = () => {
           </div>
 
           <div style={{ position: 'relative', zIndex: 1, marginTop: '2rem' }}>
-            <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', fontWeight: 500 }}>Progress ke Duta Kantin</p>
+            <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', fontWeight: 500 }}>Progress ke Hall of Fame</p>
             <div style={{ height: '6px', background: 'rgba(255,255,255,0.3)', borderRadius: '99px', overflow: 'hidden' }}>
-              <div style={{ width: '90%', height: '100%', background: 'white', borderRadius: '99px' }}></div>
+              <div style={{ width: '70%', height: '100%', background: 'white', borderRadius: '99px' }}></div>
             </div>
-            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.7rem', color: 'rgba(255,255,255,0.9)' }}>500 poin lagi menuju tier berikutnya!</p>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.7rem', color: 'rgba(255,255,255,0.9)' }}>10.500 poin lagi menuju tier berikutnya!</p>
           </div>
         </div>
       </div>
@@ -173,6 +173,19 @@ const Membership = () => {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
           <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
             <h3 style={{ margin: '0 0 1.5rem 0', color: '#1E293B', textAlign: 'center', fontSize: '1.25rem', fontWeight: 700 }}>Edit Profil</h3>
+            
+            {/* Edit Profile Picture */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ position: 'relative', width: '80px', height: '80px', marginBottom: '0.75rem' }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white', fontSize: '2rem', fontWeight: 700, boxShadow: '0 8px 20px rgba(59, 130, 246, 0.3)' }}>
+                  {profileName.charAt(0)}
+                </div>
+                <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'white', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', cursor: 'pointer', border: '3px solid white', color: '#3B82F6', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                  <Camera size={16} strokeWidth={2.5} />
+                </div>
+              </div>
+              <span style={{ fontSize: '0.8rem', color: '#3B82F6', fontWeight: 600, cursor: 'pointer' }}>Ganti Foto</span>
+            </div>
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#64748B', fontWeight: 500 }}>Nama Lengkap</label>
               <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: '0.95rem', color: '#1E293B' }} />
@@ -195,26 +208,26 @@ const Membership = () => {
           <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
             <h3 style={{ margin: '0 0 1.5rem 0', color: '#1E293B', textAlign: 'center', fontSize: '1.25rem', fontWeight: 700 }}>Keuntungan Membership</h3>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)', padding: '1rem', borderRadius: '16px' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: '#F59E0B', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 10px rgba(245, 158, 11, 0.3)' }}><Star size={28}/></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: 'linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)', padding: '1rem', borderRadius: '16px' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: '#3B82F6', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)' }}><Star size={28}/></div>
               <div>
-                <h4 style={{ margin: '0 0 0.25rem 0', color: '#B45309', fontSize: '1.1rem', fontWeight: 800 }}>Sobat Jajan</h4>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: '#D97706', fontWeight: 600 }}>Tier Anda Saat Ini</p>
+                <h4 style={{ margin: '0 0 0.25rem 0', color: '#1E40AF', fontSize: '1.1rem', fontWeight: 800 }}>Campus Star</h4>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#2563EB', fontWeight: 600 }}>Tier Anda Saat Ini</p>
               </div>
             </div>
             
             <h5 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: '#1E293B', fontWeight: 700 }}>Keuntungan Tier Ini:</h5>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.75rem' }}>
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                <div style={{ color: '#F59E0B', marginTop: '2px' }}><Star size={16} /></div>
+                <div style={{ color: '#3B82F6', marginTop: '2px' }}><Star size={16} /></div>
                 <span style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.4 }}>Akses pengumpulan poin dasar di setiap transaksi.</span>
               </div>
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                <div style={{ color: '#F59E0B', marginTop: '2px' }}><Star size={16} /></div>
+                <div style={{ color: '#3B82F6', marginTop: '2px' }}><Star size={16} /></div>
                 <span style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.4 }}>Promo diskon bulanan reguler di seluruh kantin.</span>
               </div>
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                <div style={{ color: '#F59E0B', marginTop: '2px' }}><Star size={16} /></div>
+                <div style={{ color: '#3B82F6', marginTop: '2px' }}><Star size={16} /></div>
                 <span style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.4 }}>Akses ke mini game untuk mengumpulkan koin.</span>
               </div>
             </div>

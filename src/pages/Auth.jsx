@@ -67,12 +67,6 @@ const Auth = () => {
             <img src={logoNgolab} alt="Ngolab Logo" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
             <h1 style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0, fontFamily: 'Poppins', color: 'white', letterSpacing: '-0.5px' }}>Point<span style={{ color: '#FF7A03' }}>Lab</span></h1>
           </div>
-          {/* Top Right Icons */}
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#FF7A03' }}>
-              <Gamepad2 size={16} />
-            </div>
-          </div>
         </div>
 
         {/* Title Text */}
@@ -91,20 +85,6 @@ const Auth = () => {
           
           {!isLogin && (
             <>
-              {/* NIM */}
-              <div>
-                <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.5px', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
-                  NIM
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#64748B' }}>
-                    <IdCard size={16} />
-                  </div>
-                  <input type="text" placeholder="Masukkan NIM Anda" required style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', background: '#0F172A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', fontSize: '0.85rem', outline: 'none', transition: 'border 0.2s' }} onFocus={(e) => e.target.style.borderColor = '#FF7A03'} onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.05)'} />
-                </div>
-              </div>
-
-              {/* Nama */}
               <div>
                 <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.5px', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
                   NAMA LENGKAP

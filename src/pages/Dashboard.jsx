@@ -1,13 +1,15 @@
-import { Trophy, Zap, MessageCircle, ShoppingBag, Coffee, Gamepad2, QrCode, Ticket, Gift, History, Crown } from 'lucide-react';
+import { Trophy, Zap, MessageCircle, ShoppingBag, Coffee, Gamepad2, QrCode, Ticket, Gift, History, Crown, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import tier4Card from '../assets/tier4-card.png';
+import tier3Card from '../assets/tier3-card.png';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Promo');
   const [activeBanner, setActiveBanner] = useState(0);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [selectedVoucher, setSelectedVoucher] = useState(null);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     if (activeTab !== 'Promo') return;
@@ -43,22 +45,22 @@ const Dashboard = () => {
               <div style={{ background: '#94A3B8', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <span style={{ fontSize: '10px', color: 'white' }}>P</span>
               </div>
-              <span style={{ fontWeight: 600 }}>15,200</span>
+              <span style={{ fontWeight: 600 }}>24.500</span>
               <span>·</span>
-              <span style={{ fontWeight: 600, color: '#9333EA' }}>Sultan Kampus</span>
+              <span style={{ fontWeight: 600, color: '#3B82F6' }}>Campus Star</span>
             </div>
             
             <div style={{ marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '0.75rem', color: '#64748B', fontWeight: 500, lineHeight: 1.4, paddingRight: '0.5rem' }}>
-              Anda telah mencapai tingkat tertinggi!
+              10.500 poin lagi menuju tingkat tertinggi!
             </div>
             
             {/* Progress Bar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
-              <span style={{ fontSize: '0.65rem', color: '#9333EA', fontWeight: 700, whiteSpace: 'nowrap' }}>Sultan Kampus</span>
+              <span style={{ fontSize: '0.65rem', color: '#3B82F6', fontWeight: 700, whiteSpace: 'nowrap' }}>Campus Star</span>
               <div style={{ height: '4px', background: '#E2E8F0', borderRadius: '2px', flex: 1, position: 'relative', minWidth: '40px' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: '100%', background: 'linear-gradient(90deg, #FF7A03 0%, #F59E0B 100%)', borderRadius: '2px' }}></div>
+                <div style={{ position: 'absolute', top: 0, left: 0, height: '70%', width: '70%', background: 'linear-gradient(90deg, #FF7A03 0%, #F59E0B 100%)', borderRadius: '2px' }}></div>
               </div>
-              <span style={{ fontSize: '0.65rem', color: '#F59E0B', fontWeight: 700, whiteSpace: 'nowrap' }}>MAX</span>
+              <span style={{ fontSize: '0.65rem', color: '#9333EA', fontWeight: 700, whiteSpace: 'nowrap' }}>Hall of Fame</span>
             </div>
           </div>
 
@@ -66,8 +68,8 @@ const Dashboard = () => {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
             <div style={{ marginBottom: '1rem', width: '95px', height: '95px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <img 
-                src={tier4Card} 
-                alt="Tier 4 Badge" 
+                src={tier3Card} 
+                alt="Tier 3 Badge" 
                 style={{ 
                   width: '95px', 
                   height: '95px', 
@@ -321,7 +323,10 @@ const Dashboard = () => {
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
               {/* Voucher 1 - Available */}
-              <div style={{ border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#F8FAFC' }}>
+              <div 
+                onClick={() => setSelectedVoucher({title: 'Voucher McD Rp50rb', points: 5000, type: 'Makanan', icon: 'M', color: '#DC2626'})}
+                style={{ border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#F8FAFC', cursor: 'pointer' }}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ background: '#DC2626', width: '40px', height: '40px', borderRadius: '50%', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 700, fontSize: '1.2rem' }}>M</div>
                   <span style={{ fontSize: '0.65rem', background: '#E2E8F0', padding: '0.2rem 0.5rem', borderRadius: '99px', fontWeight: 500, color: '#64748B' }}>Tersedia</span>
@@ -336,7 +341,10 @@ const Dashboard = () => {
               </div>
               
               {/* Voucher 2 - Available */}
-              <div style={{ border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#F8FAFC' }}>
+              <div 
+                onClick={() => setSelectedVoucher({title: 'Voucher Starbucks', points: 7500, type: 'Minuman', icon: <Coffee size={20} />, color: '#059669'})}
+                style={{ border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#F8FAFC', cursor: 'pointer' }}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ background: '#059669', width: '40px', height: '40px', borderRadius: '50%', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <Coffee size={20} />
@@ -353,7 +361,10 @@ const Dashboard = () => {
               </div>
 
               {/* Voucher 3 - Locked (Requires more points) */}
-              <div style={{ border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'white', opacity: 0.6 }}>
+              <div 
+                onClick={() => setSelectedVoucher({title: 'Voucher Amazon', points: 10000, type: 'Belanja', icon: <ShoppingBag size={20} />, color: '#1E293B', disabled: true})}
+                style={{ border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'white', opacity: 0.6, cursor: 'pointer' }}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ background: '#1E293B', width: '40px', height: '40px', borderRadius: '50%', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <ShoppingBag size={20} />
@@ -385,6 +396,66 @@ const Dashboard = () => {
             </div>
             <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#64748B', textAlign: 'center', lineHeight: 1.5 }}>Tunjukkan kode QR ini ke kasir untuk mengumpulkan poin atau klaim diskon.</p>
             <button onClick={() => setShowQRModal(false)} style={{ width: '100%', padding: '0.85rem', background: '#1E293B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Tutup</button>
+          </div>
+        </div>
+      )}
+
+      {/* Voucher Detail Modal */}
+      {selectedVoucher && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
+          <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ 
+                width: '80px', height: '80px', borderRadius: '20px', 
+                background: `${selectedVoucher.color}15`, color: selectedVoucher.color, 
+                display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 700, fontSize: '2rem'
+              }}>
+                {selectedVoucher.icon}
+              </div>
+            </div>
+            
+            <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', textAlign: 'center', fontSize: '1.25rem', fontWeight: 700 }}>{selectedVoucher.title}</h3>
+            <p style={{ margin: '0 0 1.5rem 0', color: '#64748B', textAlign: 'center', fontSize: '0.85rem', lineHeight: 1.5 }}>
+              Tukarkan poin Anda untuk mendapatkan voucher {selectedVoucher.type.toLowerCase()} ini. Syarat dan ketentuan berlaku.
+            </p>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid #E2E8F0' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748B' }}>Harga Poin</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#FF7A03', fontSize: '1rem', fontWeight: 700 }}>
+                <div style={{ background: '#FF7A03', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <span style={{ fontSize: '9px', color: 'white', fontWeight: 'bold' }}>P</span>
+                </div>
+                {selectedVoucher.points.toLocaleString('id-ID')}
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button onClick={() => setSelectedVoucher(null)} style={{ flex: 1, padding: '0.85rem', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Batal</button>
+              <button disabled={selectedVoucher.disabled} onClick={() => { setSelectedVoucher(null); setShowToast(true); setTimeout(() => setShowToast(false), 3000); }} style={{ flex: 1, padding: '0.85rem', background: selectedVoucher.disabled ? '#E2E8F0' : 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)', color: selectedVoucher.disabled ? '#94A3B8' : 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: selectedVoucher.disabled ? 'not-allowed' : 'pointer', boxShadow: selectedVoucher.disabled ? 'none' : '0 4px 10px rgba(255, 122, 3, 0.3)' }}>Tukar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal Notification */}
+      {showToast && (
+        <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem' }}>
+          <div style={{ background: 'white', borderRadius: '28px', padding: '2.5rem 2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+            
+            {/* Glowing Icon Container */}
+            <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
+              <div style={{ position: 'absolute', inset: '-10px', background: '#10B981', borderRadius: '50%', filter: 'blur(15px)', opacity: 0.3 }}></div>
+              <div style={{ position: 'relative', width: '80px', height: '80px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)' }}>
+                <CheckCircle2 size={40} color="white" strokeWidth={2.5} />
+              </div>
+            </div>
+
+            <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.4rem', fontWeight: 800, textAlign: 'center', letterSpacing: '-0.5px' }}>Redeem Berhasil!</h3>
+            <p style={{ margin: '0 0 2rem 0', color: '#64748B', fontSize: '0.85rem', textAlign: 'center', lineHeight: 1.5 }}>Voucher Anda telah aktif dan dapat dilihat pada halaman Riwayat.</p>
+            
+            <button onClick={() => setShowToast(false)} style={{ width: '100%', padding: '0.9rem', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#334155', borderRadius: '14px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}>
+              Lanjutkan
+            </button>
           </div>
         </div>
       )}

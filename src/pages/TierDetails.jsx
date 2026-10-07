@@ -8,9 +8,9 @@ import tier4Card from '../assets/tier4-card.png';
 
 const tiersData = [
   {
-    id: 'warga-biasa',
+    id: 'classmate',
     level: 'T1',
-    name: 'Warga Biasa',
+    name: 'Classmate',
     points: '0 - 5.000',
     color: '#94A3B8',
     glow: 'rgba(148, 163, 184, 0.4)',
@@ -24,9 +24,9 @@ const tiersData = [
     ]
   },
   {
-    id: 'sobat-jajan',
+    id: 'study-buddy',
     level: 'T2',
-    name: 'Sobat Jajan',
+    name: 'Study Buddy',
     points: '5.001 - 15.000',
     color: '#F59E0B',
     glow: 'rgba(245, 158, 11, 0.4)',
@@ -41,9 +41,9 @@ const tiersData = [
     ]
   },
   {
-    id: 'juragan-kos',
+    id: 'campus-star',
     level: 'T3',
-    name: 'Juragan Kos',
+    name: 'Campus Star',
     points: '15.001 - 35.000',
     color: '#3B82F6',
     glow: 'rgba(59, 130, 246, 0.4)',
@@ -59,9 +59,9 @@ const tiersData = [
     ]
   },
   {
-    id: 'sultan-kampus',
+    id: 'hall-of-fame',
     level: 'T4',
-    name: 'Sultan Kampus',
+    name: 'Hall of Fame',
     points: '35.001+',
     color: '#9333EA',
     glow: 'rgba(147, 51, 234, 0.4)',
@@ -82,8 +82,8 @@ const tiersData = [
 
 const TierDetails = () => {
   const navigate = useNavigate();
-  const [activeTier, setActiveTier] = useState(3); 
-  const [animKey, setAnimKey] = useState(3);
+  const [activeTier, setActiveTier] = useState(2); 
+  const [animKey, setAnimKey] = useState(2);
   const currentTier = tiersData[activeTier];
 
   const handleTierChange = (index) => {
