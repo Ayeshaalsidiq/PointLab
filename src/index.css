@@ -65,7 +65,7 @@ h1, h2, h3, h4, h5, h6 {
 .main-content {
   flex: 1;
   margin-left: 280px;
-  background: var(--bg-base);
+  background: #0F172A; /* Darker background for desktop side areas */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -73,6 +73,20 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  align-items: center;
+}
+
+.content-wrapper {
+  width: 100%;
+  max-width: 800px;
+  background: var(--bg-base);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 0 50px rgba(0,0,0,0.4);
+  border-left: 1px solid rgba(255,255,255,0.05);
+  border-right: 1px solid rgba(255,255,255,0.05);
 }
 
 .bottom-sheet-wrapper {
@@ -547,6 +561,14 @@ h1, h2, h3, h4, h5, h6 {
   .main-content {
     margin-left: 0;
     padding-bottom: 70px; /* bottom padding for the nav bar */
+    background: var(--bg-base);
+  }
+
+  .content-wrapper {
+    max-width: 100%;
+    min-height: auto;
+    border: none;
+    box-shadow: none;
   }
 
   .bottom-sheet-wrapper {

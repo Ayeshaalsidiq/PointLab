@@ -26,17 +26,19 @@ const AppContent = () => {
     <div className="app-container">
       {(!['/tier-details', '/history', '/chat'].includes(location.pathname)) && <Sidebar />}
       <div className="main-content" style={(['/tier-details', '/history', '/chat'].includes(location.pathname)) ? { marginLeft: 0, paddingBottom: 0 } : {}}>
-        {(!['/redeem', '/tier-details', '/history', '/chat'].includes(location.pathname)) && <Header />}
-        <div key={location.pathname} className="animate-fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, width: '100%' }}>
-          <Routes location={location}>
-            <Route path="/" element={<Navigate to="/auth" replace />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/redeem" element={<Redeem />} />
-            <Route path="/membership" element={<Membership />} />
-            <Route path="/tier-details" element={<TierDetails />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/chat" element={<AIChat />} />
-          </Routes>
+        <div className="content-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
+          {(!['/redeem', '/tier-details', '/history', '/chat'].includes(location.pathname)) && <Header />}
+          <div key={location.pathname} className="animate-fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, width: '100%' }}>
+            <Routes location={location}>
+              <Route path="/" element={<Navigate to="/auth" replace />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/redeem" element={<Redeem />} />
+              <Route path="/membership" element={<Membership />} />
+              <Route path="/tier-details" element={<TierDetails />} />
+              <Route path="/history" element={<History />} />
+              <Route path="/chat" element={<AIChat />} />
+            </Routes>
+          </div>
         </div>
       </div>
       

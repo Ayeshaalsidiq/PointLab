@@ -31,16 +31,16 @@ const Sidebar = () => {
       <div className="user-profile-sm flex-col gap-1">
         <div className="flex-between">
           <div className="flex-center gap-2">
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-base)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
-              <CircleUser size={20} strokeWidth={1.5} />
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 2px 10px rgba(59, 130, 246, 0.3)' }}>
+              <span style={{ fontSize: '1rem', fontWeight: 700 }}>B</span>
             </div>
             <div>
-              <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>User Lab</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Gold Member</div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'white' }}>Blair Nguyen</div>
+              <div style={{ fontSize: '0.72rem', color: '#94A3B8', fontWeight: 500, letterSpacing: '0.3px' }}>Campus Star</div>
             </div>
           </div>
-          <button style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--danger)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}>
-            <LogOut size={18} strokeWidth={1.5} />
+          <button style={{ background: 'rgba(239, 68, 68, 0.1)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', border: 'none', color: '#EF4444', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}>
+            <LogOut size={16} strokeWidth={2} />
           </button>
         </div>
       </div>
