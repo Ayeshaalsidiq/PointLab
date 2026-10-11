@@ -22,7 +22,7 @@ const resolveLocalPointLabKnowledge = (query) => {
 
   // 3. Penukaran Poin & Voucher (Tukar Poin / Redeem / Hadiah / Promo)
   if (q.includes('tukar') || q.includes('redeem') || q.includes('voucher') || q.includes('hadiah') || q.includes('diskon') || q.includes('promo') || q.includes('kode promo')) {
-    return "Poin **PointLab** Anda bisa ditukarkan dengan berbagai reward & voucher potongan harga menarik:\n\n- **Diskon 20% Ayam Bakar:** Tukar 200 poin (min. order Rp 10.000)\n- **Beli Ayam Bakar Gratis Es Teh:** Tukar 400 poin\n- **Cashback 20%:** Tukar 2.500 poin\n- **Voucher Print 100 Lembar:** Tukar 3.500 poin\n- **Voucher Kantin Rp 50.000:** Tukar 5.000 poin\n- **Bebas Parkir 1 Bulan:** Tukar 10.000 poin\n- **Kode Promo Tambahan:** Gunakan kode **NGOLABin88**\n\n💡 **Cara Penukaran:** Buka aplikasi PointLab, masuk ke tab **Rewards / Voucher**, pilih voucher yang diinginkan, lalu klik Tukar Poin sebelum melakukan transaksi di kasir!";
+    return "Poin **PointLab** Anda bisa ditukarkan dengan berbagai reward & voucher potongan harga menarik:\n\n- **Diskon 20% Ayam Bakar:** Tukar 200 poin (min. order Rp 10.000)\n- **Beli Ayam Bakar Gratis Es Teh:** Tukar 400 poin\n- **Cashback 20%:** Tukar 2.500 poin\n- **Voucher Kantin Rp 50.000:** Tukar 5.000 poin\n- **Kode Promo Tambahan:** Gunakan kode **NGOLABin88**\n\n💡 **Cara Penukaran:** Buka aplikasi PointLab, masuk ke tab **Rewards / Voucher**, pilih voucher yang diinginkan, lalu klik Tukar Poin sebelum melakukan transaksi di kasir!";
   }
 
   // 4. Cara Dapat Poin & Sistem Kumpul Poin
@@ -37,7 +37,7 @@ const resolveLocalPointLabKnowledge = (query) => {
 
   // 6. Penjelasan Poin Umum (Jika hanya bertanya 'poin' secara umum)
   if (q.includes('poin') || q.includes('point')) {
-    return "**Poin PointLab** adalah sistem loyalitas untuk setiap transaksi F&B di WarmingUp Lantai 4 FIT.\n\n- **Cara Kumpul Poin:** Belanja F&B (Rp 1.000 = 1 poin), bonus pendaftaran (100 poin), mini-game harian Play & Earn, dan sesi study coworking.\n- **Bisa Ditukar Menjadi:** Diskon 20% Ayam Bakar (200 poin), Voucher Kantin Rp 50rb (5k poin), Cashback 20% (2.5k poin), Print 100 lembar (3.5k poin), dan Parkir 1 Bulan (10k poin).\n\nTunjukkan QR Member PointLab Anda di kasir sebelum membayar untuk mulai mengumpulkan poin!";
+    return "**Poin PointLab** adalah sistem loyalitas untuk setiap transaksi F&B di WarmingUp Lantai 4 FIT.\n\n- **Cara Kumpul Poin:** Belanja F&B (Rp 1.000 = 1 poin), bonus pendaftaran (100 poin), mini-game harian Play & Earn, dan sesi study coworking.\n- **Bisa Ditukar Menjadi:** Diskon 20% Ayam Bakar (200 poin), Beli Ayam Bakar Gratis Es Teh (400 poin), Cashback 20% (2.500 poin), dan Voucher Kantin Rp 50.000 (5.000 poin).\n\nTunjukkan QR Member PointLab Anda di kasir sebelum membayar untuk mulai mengumpulkan poin!";
   }
 
   // 7. Metode Pembayaran & QRIS / Tunai
@@ -152,7 +152,10 @@ const sanitizeAndFormatResponse = (text, userQuery = '') => {
   cleaned = cleaned.replace(/ber-ac,\s*/gi, '');
   cleaned = cleaned.replace(/\s*ber-ac\s*/gi, ' ');
 
-  // 7. Rapikan baris kosong yang berlebihan
+  // 7. Hapus baris voucher print dan bebas parkir agar selalu selaras dengan aturan terkini
+  cleaned = cleaned.replace(/^.*(print\s*100\s*lembar|bebas\s*parkir|parkir\s*1\s*bulan|parkir\s*gratis).*$\n?/gmi, '');
+
+  // 8. Rapikan baris kosong yang berlebihan
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
 
   return cleaned.trim();
@@ -298,7 +301,7 @@ Informasi resmi:
 4. Cara pesan: Kiosk Sensor Gestur tanpa sentuh atau langsung di kasir Lantai 4 FIT (bayar Cash/QRIS). Scan QR PointLab untuk kumpulkan poin.
 5. Poin: Belanja F&B Rp 1.000 = 1 poin. Bonus daftar 100 poin. Game harian Play & Earn.
 6. Tier: Classmate (0-5k), Study Buddy (5k-15k), Campus Star (15k-35k), Hall of Fame (35k+).
-7. Redeem: Voucher Kantin 50rb (5k poin), Cashback 20% (2.5k), Print 100 Lembar (3.5k), Parkir 1 Bulan (10k).
+7. Redeem: Diskon 20% Ayam Bakar (200 poin), Beli Ayam Bakar Gratis Es Teh (400 poin), Cashback 20% (2.5k poin), Voucher Kantin 50rb (5k poin).
 8. Kerja Sama, Tempat Rapat & Kontak Resmi: WarmingUp Lantai 4 FIT sangat terbuka untuk kerja sama (seperti tempat rapat organisasi/komunitas, gathering, atau event). Keuntungan kerja sama: bisa dapat cashback langsung dalam bentuk uang tunai (cash)! Kontak untuk kerja sama/bantuan (sama dengan di menu Pusat Bantuan): WhatsApp +62 813-7488-1250 dan Instagram @ngolabcafe, atau langsung ke kasir Lantai 4 FIT.
 Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
 
