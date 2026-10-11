@@ -5,7 +5,7 @@ import { useUser } from '../context/UserContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { points, tierInfo } = useUser();
+  const { user, points, tierInfo, promos, redeemedVouchers, redeemPromo } = useUser();
   const [activeTab, setActiveTab] = useState('Promo');
   const [activeBanner, setActiveBanner] = useState(0);
   const [showQRModal, setShowQRModal] = useState(false);
@@ -39,14 +39,19 @@ const Dashboard = () => {
           
           {/* Bagian Kiri (Teks & Progress Bar) */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1A1B27', margin: '0 0 0.5rem 0', fontFamily: 'Poppins' }}>
-              Blair Nguyen
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1A1B27', margin: '0 0 0.25rem 0', fontFamily: 'Poppins' }}>
+              {user?.nama || user?.name || 'Member PointLab'}
             </h2>
+            {user?.nim && (
+              <div style={{ fontSize: '0.75rem', color: '#94A3B8', fontWeight: 500, marginBottom: '0.35rem' }}>
+                NIM: {user.nim}
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#64748B', fontSize: '0.875rem' }}>
               <div style={{ background: tierInfo.colors.primary, width: '16px', height: '16px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
                 <span style={{ fontSize: '10px', color: 'white' }}>P</span>
               </div>
-              <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{points.toLocaleString('id-ID')}</span>
+              <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{points.toLocaleString('id-ID')} Poin</span>
             </div>
             
             <div style={{ marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '0.75rem', color: tierInfo.colors.primary, fontWeight: 500, lineHeight: 1.4, paddingRight: '0.5rem' }}>
@@ -382,11 +387,19 @@ const Dashboard = () => {
       {showQRModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
           <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#1E293B', fontSize: '1.25rem', fontWeight: 700 }}>QR Member</h3>
-            <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #E2E8F0' }}>
-              <QrCode size={180} color="#1E293B" />
+            <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.25rem', fontWeight: 700 }}>QR Member</h3>
+            <div style={{ fontSize: '0.8rem', color: '#64748B', marginBottom: '1rem', fontWeight: 600 }}>
+              {user?.rfid_tag_id ? `RFID: ${user.rfid_tag_id}` : (user?.memberCode ? `KODE: ${user.memberCode}` : `ID: ${user?.id || 'MEMBER'}`)}
             </div>
-            <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#64748B', textAlign: 'center', lineHeight: 1.5 }}>Tunjukkan kode QR ini ke kasir untuk mengumpulkan poin atau klaim diskon.</p>
+            <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <QrCode size={180} color="#1E293B" />
+              <span style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#94A3B8', fontFamily: 'monospace', letterSpacing: '1px' }}>
+                {user?.rfid_tag_id || user?.memberCode || user?.id || 'POINTLAB-001'}
+              </span>
+            </div>
+            <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#64748B', textAlign: 'center', lineHeight: 1.5 }}>
+              Tunjukkan kode QR atau tap kartu RFID ini ke kasir WarmingUp untuk mengumpulkan poin dan mendapatkan diskon.
+            </p>
             <button onClick={() => setShowQRModal(false)} style={{ width: '100%', padding: '0.85rem', background: '#1E293B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Tutup</button>
           </div>
         </div>

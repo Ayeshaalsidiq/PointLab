@@ -1,45 +1,86 @@
-import { useState } from 'react';
-import { Gift, Ticket, Zap, CheckCircle2, ChevronRight, TicketPercent } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Gift, Ticket, Zap, CheckCircle2, ChevronRight, TicketPercent, AlertCircle } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
+
+const defaultVouchers = [
+  { id: 1, title: 'Voucher Kantin Rp 50.000', points: 5000, type: 'Makanan', jenis: 'Potongan Harga', color: '#F59E0B' },
+  { id: 2, title: 'Cashback Point 20%', points: 2500, type: 'Cashback', jenis: 'Diskon', color: '#10B981' },
+  { id: 3, title: 'Tiket Seminar Gratis', points: 7500, type: 'Edukasi', jenis: 'Free Produk', color: '#3B82F6' },
+  { id: 4, title: 'Voucher Print 100 Lembar', points: 3500, type: 'Fasilitas', jenis: 'Free Produk', color: '#8B5CF6' },
+  { id: 5, title: 'Parkir Gratis 1 Bulan', points: 10000, type: 'Fasilitas', jenis: 'Free Produk', color: '#EC4899' },
+];
 
 const Redeem = () => {
   const navigate = useNavigate();
   const [promoCode, setPromoCode] = useState('');
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [showToast, setShowToast] = useState(false);
-  const { points, setPoints, redeemedVouchers, setRedeemedVouchers } = useUser();
+  const [toastMessage, setToastMessage] = useState('Voucher Anda telah aktif dan dapat dilihat pada halaman Promo.');
+  const [claimError, setClaimError] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleRedeem = () => {
-    if (points >= selectedVoucher.points) {
-      setPoints(points - selectedVoucher.points);
-      
-      const { icon, ...voucherWithoutIcon } = selectedVoucher;
-      
-      const newVoucher = {
-        ...voucherWithoutIcon,
-        redeemId: Date.now().toString(),
-        code: Math.random().toString(36).substring(2, 10).toUpperCase(),
-        redeemedAt: new Date().toISOString(),
-        expired: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('id-ID'), // 30 hari dari sekarang
-        stok: 1
-      };
-      
-      setRedeemedVouchers([...redeemedVouchers, newVoucher]);
-      setSelectedVoucher(null);
-      setShowToast(true);
-    } else {
+  const { points, promos, redeemPromo, claimCode } = useUser();
+
+  // Gabungkan promo dari backend dan fallback jika kosong
+  const availableVouchers = useMemo(() => {
+    if (promos && promos.length > 0) {
+      return promos.map((p, idx) => ({
+        id: p.id || p.promo_id || idx + 1,
+        title: p.title || p.name || p.nama || `Promo Diskon ${p.discount_percent || 10}%`,
+        points: p.required_points || p.points || 1000,
+        type: p.category || p.type || 'Kantin',
+        jenis: p.jenis || (p.discount_percent ? `Diskon ${p.discount_percent}%` : 'Potongan Harga'),
+        color: ['#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'][idx % 5],
+      }));
+    }
+    return defaultVouchers;
+  }, [promos]);
+
+  const handleRedeem = async () => {
+    if (!selectedVoucher) return;
+
+    if (points < selectedVoucher.points) {
       alert('Poin Anda tidak mencukupi untuk menukarkan voucher ini.');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      await redeemPromo(selectedVoucher.id);
+      setSelectedVoucher(null);
+      setToastMessage('Redeem Berhasil! Voucher Anda telah aktif dan dapat dilihat pada halaman Promo.');
+      setShowToast(true);
+    } catch (err) {
+      alert(err.message || 'Gagal menukarkan voucher. Silakan coba lagi.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const vouchers = [
-    { id: 1, title: 'Voucher Kantin Rp 50.000', points: 5000, type: 'Makanan', jenis: 'Potongan Harga', icon: <Gift size={24} />, color: '#F59E0B' },
-    { id: 2, title: 'Cashback Point 20%', points: 2500, type: 'Cashback', jenis: 'Diskon', icon: <Zap size={24} />, color: '#10B981' },
-    { id: 3, title: 'Tiket Seminar Gratis', points: 7500, type: 'Edukasi', jenis: 'Free Produk', icon: <Ticket size={24} />, color: '#3B82F6' },
-    { id: 4, title: 'Voucher Print 100 Lembar', points: 3500, type: 'Fasilitas', jenis: 'Free Produk', icon: <Gift size={24} />, color: '#8B5CF6' },
-    { id: 5, title: 'Parkir Gratis 1 Bulan', points: 10000, type: 'Fasilitas', jenis: 'Free Produk', icon: <CheckCircle2 size={24} />, color: '#EC4899' },
-  ];
+  const handleClaimCode = async () => {
+    if (!promoCode.trim()) return;
+
+    setIsProcessing(true);
+    setClaimError('');
+    try {
+      await claimCode(promoCode.trim().toUpperCase());
+      setPromoCode('');
+      setToastMessage('Selamat! Kode promo berhasil diklaim dan masuk ke Promo Saya.');
+      setShowToast(true);
+    } catch (err) {
+      setClaimError(err.message || 'Kode promo tidak valid atau sudah kadaluarsa.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const getVoucherIcon = (type, color) => {
+    if (type?.toLowerCase().includes('cashback')) return <Zap size={24} color={color} />;
+    if (type?.toLowerCase().includes('edukasi')) return <Ticket size={24} color={color} />;
+    if (type?.toLowerCase().includes('fasilitas')) return <CheckCircle2 size={24} color={color} />;
+    return <Gift size={24} color={color} />;
+  };
 
   return (
     <div style={{ background: '#FFFFFF', flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
@@ -47,7 +88,7 @@ const Redeem = () => {
       {/* Header Area */}
       <div style={{ padding: '1.5rem 1.5rem 1rem 1.5rem', flexShrink: 0 }}>
         <h1 style={{ color: '#1E293B', fontSize: '1.75rem', fontWeight: 700, margin: '0 0 1.5rem 0' }}>
-          Promo Spesial
+          Tukar Poin & Promo
         </h1>
         
         {/* Points Summary Card */}
@@ -98,9 +139,9 @@ const Redeem = () => {
             }}>
               <input 
                 type="text" 
-                placeholder="Masukkan kode..." 
+                placeholder="Masukkan kode promo (misal: NGOLAB2026)..." 
                 value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setClaimError(''); }}
                 style={{ 
                   border: 'none', background: 'transparent', outline: 'none', width: '100%', 
                   fontSize: '0.9rem', fontWeight: 500, letterSpacing: promoCode ? '1px' : 'normal',
@@ -108,24 +149,36 @@ const Redeem = () => {
                 }}
               />
             </div>
-            <button style={{ 
-              background: '#1A1B27', color: 'white', border: 'none', borderRadius: '12px', 
-              padding: '0 1.25rem', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' 
-            }}>
-              Tukar
+            <button
+              onClick={handleClaimCode}
+              disabled={isProcessing || !promoCode.trim()}
+              style={{ 
+                background: '#1A1B27', color: 'white', border: 'none', borderRadius: '12px', 
+                padding: '0 1.25rem', fontWeight: 600, cursor: isProcessing ? 'not-allowed' : 'pointer', fontSize: '0.85rem',
+                opacity: (isProcessing || !promoCode.trim()) ? 0.6 : 1
+              }}
+            >
+              {isProcessing ? '...' : 'Tukar'}
             </button>
           </div>
+
+          {claimError && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#EF4444', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+              <AlertCircle size={14} />
+              <span>{claimError}</span>
+            </div>
+          )}
         </div>
 
         {/* Vouchers List */}
         <div style={{ padding: '1.5rem', paddingBottom: '3rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1E293B', fontWeight: 700 }}>Pilihan Penukaran</h3>
-            <span style={{ fontSize: '0.8rem', color: '#3B82F6', fontWeight: 600, cursor: 'pointer' }}>Lihat Semua</span>
+            <span onClick={() => navigate('/promo')} style={{ fontSize: '0.8rem', color: '#3B82F6', fontWeight: 600, cursor: 'pointer' }}>Voucher Saya</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {vouchers.map((voucher) => (
+            {availableVouchers.map((voucher) => (
               <div key={voucher.id} onClick={() => setSelectedVoucher(voucher)} style={{ 
                 display: 'flex', alignItems: 'center', gap: '1rem', 
                 padding: '1rem', background: '#FFFFFF', 
@@ -137,10 +190,9 @@ const Redeem = () => {
                 <div style={{ 
                   minWidth: '50px', height: '50px', 
                   background: `${voucher.color}15`, 
-                  color: voucher.color,
                   borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center'
                 }}>
-                  {voucher.icon}
+                  {getVoucherIcon(voucher.type, voucher.color)}
                 </div>
                 
                 {/* Info */}
@@ -155,7 +207,7 @@ const Redeem = () => {
                     <div style={{ background: '#FF7A03', width: '14px', height: '14px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                       <span style={{ fontSize: '8px', color: 'white', fontWeight: 'bold' }}>P</span>
                     </div>
-                    {voucher.points.toLocaleString('id-ID')}
+                    {voucher.points.toLocaleString('id-ID')} Poin
                   </div>
                 </div>
 
@@ -177,16 +229,16 @@ const Redeem = () => {
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
               <div style={{ 
                 width: '80px', height: '80px', borderRadius: '20px', 
-                background: `${selectedVoucher.color}15`, color: selectedVoucher.color, 
+                background: `${selectedVoucher.color}15`, 
                 display: 'flex', justifyContent: 'center', alignItems: 'center' 
               }}>
-                {selectedVoucher.icon}
+                {getVoucherIcon(selectedVoucher.type, selectedVoucher.color)}
               </div>
             </div>
             
             <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', textAlign: 'center', fontSize: '1.25rem', fontWeight: 700 }}>{selectedVoucher.title}</h3>
             <p style={{ margin: '0 0 1.5rem 0', color: '#64748B', textAlign: 'center', fontSize: '0.85rem', lineHeight: 1.5 }}>
-              Tukarkan poin Anda untuk mendapatkan {selectedVoucher.type.toLowerCase()} ini. Syarat dan ketentuan berlaku.
+              Tukarkan {selectedVoucher.points.toLocaleString('id-ID')} poin Anda untuk mendapatkan reward {selectedVoucher.type.toLowerCase()} ini di WarmingUp.
             </p>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid #E2E8F0' }}>
@@ -201,7 +253,9 @@ const Redeem = () => {
             
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button onClick={() => setSelectedVoucher(null)} style={{ flex: 1, padding: '0.85rem', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Batal</button>
-              <button onClick={handleRedeem} style={{ flex: 1, padding: '0.85rem', background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 4px 10px rgba(255, 122, 3, 0.3)' }}>Tukar</button>
+              <button disabled={isProcessing} onClick={handleRedeem} style={{ flex: 1, padding: '0.85rem', background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: isProcessing ? 'not-allowed' : 'pointer', boxShadow: '0 4px 10px rgba(255, 122, 3, 0.3)', opacity: isProcessing ? 0.7 : 1 }}>
+                {isProcessing ? 'Menukar...' : 'Tukar'}
+              </button>
             </div>
           </div>
         </div>
@@ -220,8 +274,8 @@ const Redeem = () => {
               </div>
             </div>
 
-            <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.4rem', fontWeight: 800, textAlign: 'center', letterSpacing: '-0.5px' }}>Redeem Berhasil!</h3>
-            <p style={{ margin: '0 0 2rem 0', color: '#64748B', fontSize: '0.85rem', textAlign: 'center', lineHeight: 1.5 }}>Voucher Anda telah aktif dan dapat dilihat pada halaman Promo.</p>
+            <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.4rem', fontWeight: 800, textAlign: 'center', letterSpacing: '-0.5px' }}>Berhasil!</h3>
+            <p style={{ margin: '0 0 2rem 0', color: '#64748B', fontSize: '0.85rem', textAlign: 'center', lineHeight: 1.5 }}>{toastMessage}</p>
             
             <button onClick={() => setShowToast(false)} style={{ width: '100%', padding: '0.9rem', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#334155', borderRadius: '14px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}>
               Lanjutkan

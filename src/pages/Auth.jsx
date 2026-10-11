@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, IdCard, CheckSquare, Square, Eye, EyeOff, Gamepad2, Sun } from 'lucide-react';
+import { Mail, Lock, User, Phone, IdCard, CheckSquare, Square, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import logoNgolab from '../assets/logo-ngolab.png';
+import { useUser } from '../context/UserContext';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,21 +10,77 @@ const Auth = () => {
   const [keepLoggedIn, setKeepLoggedIn] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Form States
+  const [identifier, setIdentifier] = useState('');
+  const [nama, setNama] = useState('');
+  const [nim, setNim] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const navigate = useNavigate();
+  const { login, register } = useUser();
 
   const toggleAuth = () => {
     setIsAnimating(true);
+    setErrorMessage('');
     setTimeout(() => {
       setIsLogin(!isLogin);
       setIsAnimating(false);
     }, 300);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 600);
+    setErrorMessage('');
+
+    if (isLogin) {
+      if (!identifier.trim() || !password) {
+        setErrorMessage('Mohon isi Email/NIM dan password.');
+        return;
+      }
+      setIsSubmitting(true);
+      try {
+        await login(identifier.trim(), password);
+        navigate('/dashboard');
+      } catch (err) {
+        setErrorMessage(err.message || 'Login gagal. Periksa data kredensial Anda.');
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      // Register validation
+      if (!nama.trim() || !nim.trim() || !phone.trim() || !password) {
+        setErrorMessage('Mohon lengkapi seluruh field pendaftaran.');
+        return;
+      }
+      if (password.length < 6) {
+        setErrorMessage('Password minimal 6 karakter.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setErrorMessage('Konfirmasi password tidak cocok.');
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        await register({
+          nama: nama.trim(),
+          nim: nim.trim(),
+          phone: phone.trim(),
+          password,
+        });
+        navigate('/dashboard');
+      } catch (err) {
+        setErrorMessage(err.message || 'Pendaftaran gagal. Periksa kembali data Anda.');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
   };
 
   return (
@@ -50,9 +107,9 @@ const Auth = () => {
         backdropFilter: 'blur(20px)',
         border: '1px solid rgba(255,255,255,0.05)',
         borderRadius: '20px',
-        padding: '2.5rem 1.5rem', /* Increased padding-top/bottom to make form longer */
+        padding: '2.5rem 1.5rem',
         width: '100%',
-        maxWidth: '380px', /* Smaller form width like the reference */
+        maxWidth: '400px',
         zIndex: 1,
         boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -70,21 +127,42 @@ const Auth = () => {
         </div>
 
         {/* Title Text */}
-        <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ marginBottom: '1.25rem' }}>
           <h2 style={{ color: 'white', fontSize: '1.4rem', fontWeight: 700, margin: '0 0 0.25rem 0', letterSpacing: '-0.5px' }}>
             {isLogin ? 'Welcome to ' : 'Buat Akun '}<span style={{ color: '#FF7A03' }}>PointLab</span>
           </h2>
           <p style={{ color: '#94A3B8', fontSize: '0.75rem', margin: 0, lineHeight: 1.5 }}>
             {isLogin 
-              ? 'Masuk dengan akun PointLab Anda. Sistem akan mendeteksi peran akses Anda secara otomatis.' 
-              : 'Daftarkan diri Anda untuk mulai menikmati keuntungan dan voucher eksklusif.'}
+              ? 'Masuk dengan akun PointLab Anda. Terintegrasi penuh dengan Kantin & Ngolab Gami.' 
+              : 'Daftarkan diri Anda untuk mulai mengumpulkan poin dan menukarkan voucher eksklusif.'}
           </p>
         </div>
+
+        {/* Error Notification */}
+        {errorMessage && (
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '10px',
+            padding: '0.75rem',
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            color: '#FCA5A5',
+            fontSize: '0.8rem',
+            lineHeight: 1.4
+          }}>
+            <AlertCircle size={18} color="#EF4444" style={{ flexShrink: 0 }} />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           
           {!isLogin && (
             <>
+              {/* Nama Lengkap */}
               <div>
                 <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.5px', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
                   NAMA LENGKAP
@@ -93,26 +171,90 @@ const Auth = () => {
                   <div style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#64748B' }}>
                     <User size={16} />
                   </div>
-                  <input type="text" placeholder="Masukkan Nama Lengkap" required style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', background: '#0F172A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', fontSize: '0.85rem', outline: 'none', transition: 'border 0.2s' }} onFocus={(e) => e.target.style.borderColor = '#FF7A03'} onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.05)'} />
+                  <input
+                    type="text"
+                    value={nama}
+                    onChange={(e) => setNama(e.target.value)}
+                    placeholder="Masukkan Nama Lengkap"
+                    required
+                    style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', background: '#0F172A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', fontSize: '0.85rem', outline: 'none', transition: 'border 0.2s' }}
+                    onFocus={(e) => e.target.style.borderColor = '#FF7A03'}
+                    onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.05)'}
+                  />
+                </div>
+              </div>
+
+              {/* NIM */}
+              <div>
+                <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.5px', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+                  NIM / NOMOR INDUK
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#64748B' }}>
+                    <IdCard size={16} />
+                  </div>
+                  <input
+                    type="text"
+                    value={nim}
+                    onChange={(e) => setNim(e.target.value)}
+                    placeholder="Contoh: 21102001"
+                    required
+                    style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', background: '#0F172A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', fontSize: '0.85rem', outline: 'none', transition: 'border 0.2s' }}
+                    onFocus={(e) => e.target.style.borderColor = '#FF7A03'}
+                    onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.05)'}
+                  />
+                </div>
+              </div>
+
+              {/* No WhatsApp / Phone */}
+              <div>
+                <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.5px', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+                  NOMOR WHATSAPP / TELEPON
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#64748B' }}>
+                    <Phone size={16} />
+                  </div>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Contoh: 08123456789"
+                    required
+                    style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', background: '#0F172A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', fontSize: '0.85rem', outline: 'none', transition: 'border 0.2s' }}
+                    onFocus={(e) => e.target.style.borderColor = '#FF7A03'}
+                    onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.05)'}
+                  />
                 </div>
               </div>
             </>
           )}
 
-          {/* Email / NIM */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-              <label style={{ color: '#94A3B8', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                EMAIL / NIM
-              </label>
-            </div>
-            <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#475569' }}>
-                <User size={16} />
+          {/* Email / NIM (Login Mode) */}
+          {isLogin && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <label style={{ color: '#94A3B8', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                  EMAIL / NIM / NOMOR TELEPON
+                </label>
               </div>
-              <input type="text" placeholder="Masukkan Email atau NIM" required style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', background: '#0F172A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', fontSize: '0.85rem', outline: 'none', transition: 'border 0.2s' }} onFocus={(e) => e.target.style.borderColor = '#FF7A03'} onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.05)'} />
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#475569' }}>
+                  <User size={16} />
+                </div>
+                <input
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="Masukkan Email, NIM, atau No HP"
+                  required
+                  style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', background: '#0F172A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', fontSize: '0.85rem', outline: 'none', transition: 'border 0.2s' }}
+                  onFocus={(e) => e.target.style.borderColor = '#FF7A03'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.05)'}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Password */}
           <div>
@@ -120,13 +262,21 @@ const Auth = () => {
               <label style={{ color: '#94A3B8', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                 PASSWORD
               </label>
-              {isLogin && <span style={{ color: '#94A3B8', fontSize: '0.65rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Lock size={10}/> Forgot Password?</span>}
             </div>
             <div style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#475569' }}>
                 <Lock size={16} />
               </div>
-              <input type={showPassword ? "text" : "password"} placeholder="••••••••" required style={{ width: '100%', padding: '0.75rem 2.5rem', background: '#0F172A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', fontSize: '0.85rem', outline: 'none', transition: 'border 0.2s', letterSpacing: showPassword ? 'normal' : '2px' }} onFocus={(e) => e.target.style.borderColor = '#FF7A03'} onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.05)'} />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                style={{ width: '100%', padding: '0.75rem 2.5rem', background: '#0F172A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', fontSize: '0.85rem', outline: 'none', transition: 'border 0.2s', letterSpacing: showPassword ? 'normal' : '2px' }}
+                onFocus={(e) => e.target.style.borderColor = '#FF7A03'}
+                onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.05)'}
+              />
               <div 
                 style={{ position: 'absolute', right: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#475569', cursor: 'pointer' }}
                 onClick={() => setShowPassword(!showPassword)}
@@ -146,7 +296,16 @@ const Auth = () => {
                 <div style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#475569' }}>
                   <Lock size={16} />
                 </div>
-                <input type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" required style={{ width: '100%', padding: '0.75rem 2.5rem', background: '#0F172A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', fontSize: '0.85rem', outline: 'none', transition: 'border 0.2s', letterSpacing: showConfirmPassword ? 'normal' : '2px' }} onFocus={(e) => e.target.style.borderColor = '#FF7A03'} onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.05)'} />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  style={{ width: '100%', padding: '0.75rem 2.5rem', background: '#0F172A', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: 'white', fontSize: '0.85rem', outline: 'none', transition: 'border 0.2s', letterSpacing: showConfirmPassword ? 'normal' : '2px' }}
+                  onFocus={(e) => e.target.style.borderColor = '#FF7A03'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.05)'}
+                />
                 <div 
                   style={{ position: 'absolute', right: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#475569', cursor: 'pointer' }}
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -163,22 +322,26 @@ const Auth = () => {
               onClick={() => setKeepLoggedIn(!keepLoggedIn)}
             >
               {keepLoggedIn ? <CheckSquare size={16} color="#10B981" /> : <Square size={16} color="#475569" />}
-              <span style={{ color: '#CBD5E1', fontSize: '0.75rem' }}>Keep me logged in</span>
+              <span style={{ color: '#CBD5E1', fontSize: '0.75rem' }}>Ingat Saya</span>
             </div>
           )}
 
-          <button type="submit" style={{ 
-            background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)', 
-            color: 'white', border: 'none', padding: '0.75rem', borderRadius: '10px', 
-            fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
-            marginTop: '2rem', boxShadow: '0 8px 20px rgba(255, 122, 3, 0.25)',
-            transition: 'transform 0.2s', letterSpacing: '0.5px'
-          }}
-          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
-          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            style={{ 
+              background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)', 
+              color: 'white', border: 'none', padding: '0.75rem', borderRadius: '10px', 
+              fontWeight: 700, fontSize: '0.9rem', cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              marginTop: '1.5rem', boxShadow: '0 8px 20px rgba(255, 122, 3, 0.25)',
+              transition: 'transform 0.2s, opacity 0.2s', letterSpacing: '0.5px',
+              opacity: isSubmitting ? 0.7 : 1
+            }}
+            onMouseDown={(e) => !isSubmitting && (e.currentTarget.style.transform = 'scale(0.98)')}
+            onMouseUp={(e) => !isSubmitting && (e.currentTarget.style.transform = 'scale(1)')}
+            onMouseLeave={(e) => !isSubmitting && (e.currentTarget.style.transform = 'scale(1)')}
           >
-            {isLogin ? 'LOGIN' : 'DAFTAR SEKARANG'}
+            {isSubmitting ? 'MEMPROSES...' : (isLogin ? 'LOGIN' : 'DAFTAR SEKARANG')}
           </button>
         </form>
 
@@ -196,7 +359,7 @@ const Auth = () => {
       
       {/* Footer text outside card */}
       <div style={{ marginTop: '1.5rem', textAlign: 'center', color: '#64748B', fontSize: '0.65rem', zIndex: 1 }}>
-        © 2026 PointLab by NgoLab. All Right Reserved.
+        © 2026 PointLab by NgoLab. All Rights Reserved.
       </div>
     </div>
   );

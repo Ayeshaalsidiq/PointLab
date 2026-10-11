@@ -1,20 +1,22 @@
-import { Crown, CheckCircle2, ShieldCheck, Settings, LogOut, ChevronRight, Wallet, Clock, HelpCircle, QrCode, Star, Camera, Lock, Eye, EyeOff } from 'lucide-react';
+import { Crown, CheckCircle2, ShieldCheck, Settings, LogOut, ChevronRight, Clock, HelpCircle, QrCode, Star, Camera, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 
 const Membership = () => {
   const navigate = useNavigate();
-  const { points, tierInfo } = useUser();
+  const { user, points, tierInfo, updateProfile, updatePassword, uploadAvatar, logout } = useUser();
   const [showQRModal, setShowQRModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showBenefitModal, setShowBenefitModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [profileName, setProfileName] = useState(() => localStorage.getItem('pointlab_user_name') || 'Blair Nguyen');
-  const [profilePhone, setProfilePhone] = useState(() => localStorage.getItem('pointlab_user_phone') || '+62 812-3456-7890');
-  const [profileImage, setProfileImage] = useState(() => localStorage.getItem('pointlab_user_image') || null);
+  
+  const [profileName, setProfileName] = useState('');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [profileImage, setProfileImage] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('Profil berhasil diperbarui!');
+  const [isSaving, setIsSaving] = useState(false);
 
   // State untuk Edit Password
   const [password, setPassword] = useState('');
@@ -23,15 +25,33 @@ const Membership = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
 
-  const handleImageChange = (e) => {
+  // Sinkronkan state lokal saat modal buka atau user berubah
+  useEffect(() => {
+    if (user) {
+      setProfileName(user.nama || user.name || '');
+      setProfilePhone(user.phone || user.telp || '');
+      setProfileImage(user.avatar_url || null);
+    }
+  }, [user]);
+
+  const handleImageChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
-      const url = URL.createObjectURL(e.target.files[0]);
-      setProfileImage(url);
-      localStorage.setItem('pointlab_user_image', url);
+      const file = e.target.files[0];
+      const previewUrl = URL.createObjectURL(file);
+      setProfileImage(previewUrl);
+
+      try {
+        await uploadAvatar(file);
+        setToastMessage('Foto profil berhasil diunggah!');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      } catch (err) {
+        console.error('Gagal mengunggah foto profil:', err);
+      }
     }
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     // Validasi Password jika diisi
     if (password.trim() || confirmPassword.trim()) {
       if (password.length < 6) {
@@ -42,20 +62,34 @@ const Membership = () => {
         setPasswordError('Konfirmasi password tidak cocok.');
         return;
       }
-      localStorage.setItem('pointlab_user_password', password);
     }
 
-    localStorage.setItem('pointlab_user_name', profileName);
-    localStorage.setItem('pointlab_user_phone', profilePhone);
-    
-    // Reset input password & error
-    setPassword('');
-    setConfirmPassword('');
-    setPasswordError('');
-    setShowEditProfileModal(false);
-    setToastMessage('Profil & password berhasil diperbarui!');
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+    setIsSaving(true);
+    try {
+      // 1. Simpan update profil (nama, phone)
+      await updateProfile({
+        nama: profileName.trim(),
+        phone: profilePhone.trim(),
+      });
+
+      // 2. Jika password diisi, update password
+      if (password.trim()) {
+        await updatePassword(null, password.trim());
+      }
+
+      // Reset input password & error
+      setPassword('');
+      setConfirmPassword('');
+      setPasswordError('');
+      setShowEditProfileModal(false);
+      setToastMessage('Profil & password berhasil disimpan ke server!');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (err) {
+      setPasswordError(err.message || 'Gagal menyimpan profil.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCloseEditProfile = () => {
@@ -64,6 +98,14 @@ const Membership = () => {
     setPasswordError('');
     setShowEditProfileModal(false);
   };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/auth');
+  };
+
+  const displayName = profileName || user?.nama || user?.name || 'Member PointLab';
+  const displayPhone = profilePhone || user?.phone || user?.telp || '-';
 
   return (
     <div style={{ background: '#1A1B27', flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
@@ -75,12 +117,15 @@ const Membership = () => {
             {profileImage ? (
               <img src={profileImage} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
-              <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>{profileName.charAt(0)}</span>
+              <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>{displayName.charAt(0)}</span>
             )}
           </div>
           <div>
-            <h1 style={{ color: 'white', fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.25rem 0' }}>{profileName}</h1>
-            <p style={{ color: '#94A3B8', fontSize: '0.85rem', margin: 0 }}>{profilePhone}</p>
+            <h1 style={{ color: 'white', fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.25rem 0' }}>{displayName}</h1>
+            <p style={{ color: '#94A3B8', fontSize: '0.85rem', margin: 0 }}>{displayPhone}</p>
+            {user?.nim && (
+              <span style={{ color: '#64748B', fontSize: '0.75rem', fontWeight: 500 }}>NIM: {user.nim}</span>
+            )}
           </div>
         </div>
         <div onClick={() => setShowEditProfileModal(true)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}>
@@ -187,13 +232,11 @@ const Membership = () => {
                 }} 
                 onClick={() => {
                   if (item.label === 'Keluar Akun') {
-                    navigate('/auth');
+                    handleLogout();
                   } else if (item.label === 'Pengaturan Profil') {
                     setShowEditProfileModal(true);
                   } else if (item.label === 'Pusat Bantuan') {
                     setShowHelpModal(true);
-                  } else {
-                    alert(`Membuka ${item.label}...`);
                   }
                 }}
                 onMouseOver={(e) => e.currentTarget.style.background = '#F8FAFC'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
@@ -220,11 +263,19 @@ const Membership = () => {
       {showQRModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
           <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#1E293B', fontSize: '1.25rem', fontWeight: 700 }}>QR Member</h3>
-            <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #E2E8F0' }}>
-              <QrCode size={180} color="#1E293B" />
+            <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.25rem', fontWeight: 700 }}>QR Member</h3>
+            <div style={{ fontSize: '0.8rem', color: '#64748B', marginBottom: '1rem', fontWeight: 600 }}>
+              {user?.rfid_tag_id ? `RFID: ${user.rfid_tag_id}` : (user?.memberCode ? `KODE: ${user.memberCode}` : `ID: ${user?.id || 'MEMBER'}`)}
             </div>
-            <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#64748B', textAlign: 'center', lineHeight: 1.5 }}>Tunjukkan kode QR ini ke kasir untuk mengumpulkan poin atau klaim diskon.</p>
+            <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <QrCode size={180} color="#1E293B" />
+              <span style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#94A3B8', fontFamily: 'monospace', letterSpacing: '1px' }}>
+                {user?.rfid_tag_id || user?.memberCode || user?.id || 'POINTLAB-001'}
+              </span>
+            </div>
+            <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#64748B', textAlign: 'center', lineHeight: 1.5 }}>
+              Tunjukkan kode QR atau tap kartu RFID ini ke kasir WarmingUp untuk mengumpulkan poin dan mendapatkan diskon.
+            </p>
             <button onClick={() => setShowQRModal(false)} style={{ width: '100%', padding: '0.85rem', background: '#1E293B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Tutup</button>
           </div>
         </div>
@@ -243,19 +294,19 @@ const Membership = () => {
                   {profileImage ? (
                     <img src={profileImage} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    profileName.charAt(0)
+                    displayName.charAt(0)
                   )}
                 </div>
                 <label htmlFor="profile-upload" style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'white', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', cursor: 'pointer', border: '3px solid white', color: '#3B82F6', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
                   <Camera size={15} strokeWidth={2.5} />
                 </label>
-                <input id="profile-upload" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageChange} />
+                <input id="profile-upload" type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
               </div>
-              <label htmlFor="profile-upload" style={{ fontSize: '0.8rem', color: '#3B82F6', fontWeight: 600, cursor: 'pointer' }}>Ganti Foto</label>
+              <span style={{ fontSize: '0.75rem', color: '#64748B' }}>Ubah Foto Profil</span>
             </div>
 
             {/* Nama Lengkap */}
-            <div style={{ marginBottom: '0.85rem' }}>
+            <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>Nama Lengkap</label>
               <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} style={{ width: '100%', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: '0.9rem', color: '#1E293B' }} />
             </div>
@@ -327,7 +378,9 @@ const Membership = () => {
 
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button onClick={handleCloseEditProfile} style={{ flex: 1, padding: '0.8rem', background: '#F1F5F9', color: '#64748B', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>Batal</button>
-              <button onClick={handleSaveProfile} style={{ flex: 1, padding: '0.8rem', background: '#3B82F6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)' }}>Simpan</button>
+              <button disabled={isSaving} onClick={handleSaveProfile} style={{ flex: 1, padding: '0.8rem', background: '#3B82F6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.9rem', cursor: isSaving ? 'not-allowed' : 'pointer', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)', opacity: isSaving ? 0.7 : 1 }}>
+                {isSaving ? 'Menyimpan...' : 'Simpan'}
+              </button>
             </div>
           </div>
         </div>
@@ -366,27 +419,20 @@ const Membership = () => {
       {showHelpModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
           <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#E0F2FE', color: '#0284C7', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <HelpCircle size={32} />
-              </div>
-            </div>
             <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', textAlign: 'center', fontSize: '1.25rem', fontWeight: 700 }}>Pusat Bantuan</h3>
-            <p style={{ margin: '0 0 1.5rem 0', color: '#64748B', textAlign: 'center', fontSize: '0.85rem', lineHeight: 1.5 }}>
-              Punya pertanyaan atau kendala? Hubungi tim support kami.
-            </p>
+            <p style={{ margin: '0 0 1.5rem 0', color: '#64748B', textAlign: 'center', fontSize: '0.85rem', lineHeight: 1.5 }}>Butuh bantuan terkait poin, reward, pesanan kantin, atau akun?</p>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
               {/* WhatsApp Contact */}
               <a href="https://wa.me/6281374881250" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#F0FDF4', padding: '1rem', borderRadius: '16px', border: '1px solid #DCFCE7' }}>
                   <div style={{ background: '#22C55E', color: 'white', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.663-2.059-.177-.298-.018-.46.13-.61.132-.132.297-.347.446-.521.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                      <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.586 1.861.882 2.791.883h.004c3.179 0 5.767-2.587 5.768-5.766.002-3.181-2.584-5.769-5.772-5.769zm9.969 5.768c0 5.485-4.463 9.949-9.962 9.951-1.748 0-3.415-.457-4.887-1.282l-5.651 1.481 1.51-5.508c-.908-1.523-1.408-3.285-1.409-5.142.001-5.486 4.464-9.95 9.965-9.95 5.501 0 9.965 4.464 9.965 9.95z"/>
                     </svg>
                   </div>
                   <div>
-                    <h4 style={{ margin: '0 0 0.25rem 0', color: '#166534', fontSize: '0.9rem', fontWeight: 700 }}>WhatsApp Support</h4>
+                    <h4 style={{ margin: '0 0 0.25rem 0', color: '#166534', fontSize: '0.9rem', fontWeight: 700 }}>WhatsApp Admin</h4>
                     <p style={{ margin: 0, color: '#15803D', fontSize: '0.75rem', fontWeight: 600 }}>+62 813-7488-1250</p>
                   </div>
                 </div>
@@ -426,7 +472,7 @@ const Membership = () => {
             </div>
 
             <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.4rem', fontWeight: 800, textAlign: 'center', letterSpacing: '-0.5px' }}>Berhasil!</h3>
-            <p style={{ margin: '0 0 2rem 0', color: '#64748B', fontSize: '0.85rem', textAlign: 'center', lineHeight: 1.5 }}>Pengaturan profil Anda berhasil disimpan.</p>
+            <p style={{ margin: '0 0 2rem 0', color: '#64748B', fontSize: '0.85rem', textAlign: 'center', lineHeight: 1.5 }}>{toastMessage}</p>
             
             <button onClick={() => setShowToast(false)} style={{ width: '100%', padding: '0.9rem', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#334155', borderRadius: '14px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}>
               Tutup
