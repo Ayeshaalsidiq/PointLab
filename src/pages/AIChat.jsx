@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ArrowLeft, Send, Sparkles, User, Copy, Check, 
-  Utensils, MapPin, Coins, Ticket 
+  Utensils, MapPin, Coins, Ticket, History, Plus, 
+  Trash2, X, MessageSquare, Clock 
 } from 'lucide-react';
 
 // Knowledge Resolver Mandiri jika RAG/Gemini mengalami kendala/limit
@@ -148,14 +149,79 @@ const renderMessageContent = (content) => {
   );
 };
 
+const SESSIONS_STORAGE_KEY = 'pointlab_chat_sessions_v1';
+const ACTIVE_SESSION_STORAGE_KEY = 'pointlab_active_session_id';
+
+const createNewSessionObject = () => ({
+  id: 'sess_' + Date.now(),
+  title: 'Obrolan Baru',
+  createdAt: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }),
+  updatedAt: Date.now(),
+  messages: []
+});
+
 const AIChat = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [messages, setMessages] = useState([]);
+
+  // Membaca semua sesi dari localStorage agar tidak hilang saat web di-close
+  const [sessions, setSessions] = useState(() => {
+    try {
+      const saved = localStorage.getItem(SESSIONS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error("Gagal membaca chat sessions:", e);
+    }
+    return [createNewSessionObject()];
+  });
+
+  // ID sesi aktif
+  const [activeSessionId, setActiveSessionId] = useState(() => {
+    const savedActive = localStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
+    return savedActive || null;
+  });
+
+  const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const messagesEndRef = useRef(null);
+
+  // Pastikan activeSessionId selalu sinkron dengan sesi yang ada
+  useEffect(() => {
+    if (!activeSessionId && sessions.length > 0) {
+      setActiveSessionId(sessions[0].id);
+    } else if (activeSessionId && !sessions.some(s => s.id === activeSessionId)) {
+      setActiveSessionId(sessions[0]?.id || null);
+    }
+  }, [activeSessionId, sessions]);
+
+  // Simpan seluruh sesi ke localStorage setiap kali ada perubahan
+  useEffect(() => {
+    try {
+      localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+    } catch (e) {
+      console.error("Gagal menyimpan sessions ke localStorage:", e);
+    }
+  }, [sessions]);
+
+  // Simpan ID sesi aktif ke localStorage
+  useEffect(() => {
+    if (activeSessionId) {
+      try {
+        localStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, activeSessionId);
+      } catch (e) {
+        console.error("Gagal menyimpan activeSessionId:", e);
+      }
+    }
+  }, [activeSessionId]);
+
+  // Sesi aktif saat ini & daftar pesan di dalamnya
+  const currentSession = sessions.find(s => s.id === activeSessionId) || sessions[0] || null;
+  const messages = currentSession?.messages || [];
 
   // ==========================================
   // KONFIGURASI API RAG (AIONES) & GEMINI
@@ -181,9 +247,18 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  const callGeminiAPI = async (userText) => {
+  const callGeminiAPI = async (userText, recentMessages = []) => {
     if (!GEMINI_API_KEY) throw new Error("Kunci Gemini tidak dikonfigurasi.");
     
+    // Sertakan konteks multi-turn dari obrolan terkini
+    const conversationContext = recentMessages.slice(-4).map(m => 
+      `${m.sender === 'user' ? 'Pengguna' : 'Ngolab AI'}: ${m.text}`
+    ).join('\n');
+
+    const promptWithContext = conversationContext
+      ? `${systemPrompt}\n\nRiwayat obrolan sebelumnya:\n${conversationContext}\n\nPertanyaan user saat ini: ${userText}`
+      : `${systemPrompt}\n\nPertanyaan pengguna: ${userText}`;
+
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -191,7 +266,7 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
         contents: [
           {
             role: "user",
-            parts: [{ text: `${systemPrompt}\n\nPertanyaan pengguna: ${userText}` }]
+            parts: [{ text: promptWithContext }]
           }
         ]
       })
@@ -202,7 +277,7 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
     return data.candidates[0].content.parts[0].text;
   };
 
-  const callRagAPI = async (userText) => {
+  const callRagAPI = async (userText, recentMessages = []) => {
     try {
       if (RAG_API_KEY) {
         const response = await fetch(RAG_API_URL, {
@@ -235,7 +310,7 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
 
     // Jika RAG belum menemukan atau threshold rendah, coba Gemini atau Knowledge Resolver
     try {
-      return await callGeminiAPI(userText);
+      return await callGeminiAPI(userText, recentMessages);
     } catch {
       // Jika Google Gemini sedang 'high demand' / rate limit, gunakan Knowledge Resolver
       return resolveLocalPointLabKnowledge(userText);
@@ -243,24 +318,55 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
   };
 
   const sendMessageWithText = async (textToSend) => {
-    if (!textToSend.trim() || isTyping) return;
+    if (!textToSend.trim() || isTyping || !currentSession) return;
 
     const userMessage = textToSend.trim();
     const nowTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-    
-    setMessages(prev => [...prev, { id: Date.now(), sender: 'user', text: userMessage, time: nowTime }]);
+    const userMsgObj = { id: Date.now(), sender: 'user', text: userMessage, time: nowTime };
+
+    const isFirstInSession = currentSession.messages.length === 0;
+    const sessionTitle = isFirstInSession 
+      ? (userMessage.length > 26 ? userMessage.slice(0, 26) + '...' : userMessage)
+      : currentSession.title;
+
+    // Update sesi aktif dengan pesan pengguna
+    setSessions(prev => prev.map(s => {
+      if (s.id === currentSession.id) {
+        return {
+          ...s,
+          title: s.title === 'Obrolan Baru' ? sessionTitle : s.title,
+          updatedAt: Date.now(),
+          messages: [...s.messages, userMsgObj]
+        };
+      }
+      return s;
+    }));
+
     setInputValue('');
     setIsTyping(true);
 
-    const rawAiResponse = await callRagAPI(userMessage);
+    const rawAiResponse = await callRagAPI(userMessage, currentSession.messages);
     const aiResponseText = sanitizeAndFormatResponse(rawAiResponse, userMessage);
 
-    setMessages(prev => [...prev, { 
+    const aiMsgObj = { 
       id: Date.now() + 1, 
       sender: 'ai', 
       text: aiResponseText,
       time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) 
-    }]);
+    };
+
+    // Update sesi aktif dengan balasan AI
+    setSessions(prev => prev.map(s => {
+      if (s.id === currentSession.id) {
+        return {
+          ...s,
+          updatedAt: Date.now(),
+          messages: [...s.messages, aiMsgObj]
+        };
+      }
+      return s;
+    }));
+
     setIsTyping(false);
   };
 
@@ -273,6 +379,47 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  // Handler fitur Sesi Chat
+  const handleNewChat = () => {
+    if (currentSession && currentSession.messages.length === 0) {
+      setShowHistoryDrawer(false);
+      return;
+    }
+    const newSession = createNewSessionObject();
+    setSessions(prev => [newSession, ...prev]);
+    setActiveSessionId(newSession.id);
+    setShowHistoryDrawer(false);
+  };
+
+  const handleSelectSession = (id) => {
+    setActiveSessionId(id);
+    setShowHistoryDrawer(false);
+  };
+
+  const handleDeleteSession = (e, idToDelete) => {
+    e.stopPropagation();
+    const updated = sessions.filter(s => s.id !== idToDelete);
+    if (updated.length === 0) {
+      const brandNew = createNewSessionObject();
+      setSessions([brandNew]);
+      setActiveSessionId(brandNew.id);
+    } else {
+      setSessions(updated);
+      if (activeSessionId === idToDelete) {
+        setActiveSessionId(updated[0].id);
+      }
+    }
+  };
+
+  const handleClearAllHistory = () => {
+    if (window.confirm("Hapus semua riwayat sesi obrolan?")) {
+      const brandNew = createNewSessionObject();
+      setSessions([brandNew]);
+      setActiveSessionId(brandNew.id);
+      setShowHistoryDrawer(false);
+    }
   };
 
   // Kartu rekomendasi pertanyaan
@@ -310,24 +457,24 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
       <div style={{ position: 'absolute', top: '-120px', left: '15%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(255, 122, 3, 0.08) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
       <div style={{ position: 'absolute', bottom: '10%', right: '10%', width: '350px', height: '350px', background: 'radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
 
-      {/* Header Bar Clean & Minimalis */}
+      {/* Header Bar Clean, Minimalis & Kontrol Sesi */}
       <header style={{ 
         background: 'rgba(255, 255, 255, 0.9)', 
         backdropFilter: 'blur(16px)',
         borderBottom: '1px solid #E2E8F0',
-        padding: '0.85rem 1.5rem',
-        display: 'flex', alignItems: 'center',
+        padding: '0.75rem 1rem',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         zIndex: 50, position: 'sticky', top: 0
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {/* Back button circular */}
+        {/* Sisi Kiri: Tombol Back + Avatar Bulat + Nama */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
           <button 
             onClick={() => {
               const previousPage = location.state?.from || '/dashboard';
               navigate(previousPage);
             }} 
             style={{ 
-              width: '40px', height: '40px', borderRadius: '50%', 
+              width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
               background: '#F1F5F9', border: '1px solid #E2E8F0',
               display: 'flex', justifyContent: 'center', alignItems: 'center', 
               cursor: 'pointer', color: '#475569', transition: 'all 0.2s'
@@ -339,10 +486,9 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
             <ArrowLeft size={18} />
           </button>
 
-          {/* Logo samping Ngolab AI dibuat LINGKARAN */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', minWidth: 0 }}>
             <div style={{ 
-              position: 'relative', width: '40px', height: '40px', borderRadius: '50%', 
+              position: 'relative', width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
               background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', 
               display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#FF7A03',
               boxShadow: '0 4px 12px rgba(255, 122, 3, 0.15)'
@@ -350,18 +496,245 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
               <Sparkles size={18} />
               <span style={{ 
                 position: 'absolute', bottom: '0px', right: '0px', 
-                width: '10px', height: '10px', background: '#10B981', 
+                width: '9px', height: '9px', background: '#10B981', 
                 border: '2px solid white', borderRadius: '50%' 
               }}></span>
             </div>
 
-            {/* Nama Ngolab AI bersih tanpa teks subtitle */}
-            <h1 style={{ margin: 0, fontSize: '1.15rem', color: '#1E293B', fontWeight: 800, letterSpacing: '-0.3px' }}>
-              Ngolab AI
-            </h1>
+            <div style={{ minWidth: 0 }}>
+              <h1 style={{ margin: 0, fontSize: '1.05rem', color: '#1E293B', fontWeight: 800, letterSpacing: '-0.3px', lineHeight: 1.2 }}>
+                Ngolab AI
+              </h1>
+              {currentSession && currentSession.title !== 'Obrolan Baru' && (
+                <p style={{ margin: 0, fontSize: '0.72rem', color: '#64748B', maxWidth: '140px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {currentSession.title}
+                </p>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Sisi Kanan: Tombol Riwayat Sesi & Tombol Chat Baru */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexShrink: 0 }}>
+          {/* Tombol Riwayat Sesi */}
+          <button
+            onClick={() => setShowHistoryDrawer(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.35rem',
+              padding: '0.45rem 0.75rem', borderRadius: '20px',
+              background: '#F1F5F9', border: '1px solid #E2E8F0',
+              color: '#475569', fontSize: '0.8rem', fontWeight: 600,
+              cursor: 'pointer', transition: 'all 0.2s'
+            }}
+            onMouseOver={e => e.currentTarget.style.background = '#E2E8F0'}
+            onMouseOut={e => e.currentTarget.style.background = '#F1F5F9'}
+            title="Riwayat Sesi Chat"
+          >
+            <History size={16} color="#FF7A03" />
+            <span className="hide-on-mobile">Riwayat</span>
+            {sessions.length > 0 && (
+              <span style={{ 
+                background: '#FF7A03', color: 'white', borderRadius: '10px', 
+                fontSize: '0.65rem', padding: '1px 6px', fontWeight: 700 
+              }}>
+                {sessions.length}
+              </span>
+            )}
+          </button>
+
+          {/* Tombol Chat Baru */}
+          <button
+            onClick={handleNewChat}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.35rem',
+              padding: '0.45rem 0.85rem', borderRadius: '20px',
+              background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)',
+              border: 'none', color: 'white', fontSize: '0.8rem', fontWeight: 700,
+              cursor: 'pointer', boxShadow: '0 4px 10px rgba(255, 122, 3, 0.25)',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
+            onMouseOut={e => e.currentTarget.style.opacity = '1'}
+            title="Mulai Obrolan Baru"
+          >
+            <Plus size={16} />
+            <span>Baru</span>
+          </button>
+        </div>
       </header>
+
+      {/* Slide-Over Drawer Riwayat Sesi */}
+      {showHistoryDrawer && (
+        <div 
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100,
+            background: 'rgba(15, 23, 42, 0.5)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', justifyContent: 'flex-end',
+            animation: 'fade-in 0.2s ease-out'
+          }}
+          onClick={() => setShowHistoryDrawer(false)}
+        >
+          <div 
+            style={{
+              width: '100%', maxWidth: '360px', height: '100%',
+              background: '#FFFFFF',
+              display: 'flex', flexDirection: 'column',
+              boxShadow: '-10px 0 30px rgba(0, 0, 0, 0.15)',
+              animation: 'slide-left 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div style={{
+              padding: '1.25rem', borderBottom: '1px solid #E2E8F0',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: '#F8FAFC'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#FFF7ED', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <History size={18} color="#FF7A03" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#1E293B' }}>Riwayat Sesi Chat</h3>
+                  <span style={{ fontSize: '0.72rem', color: '#64748B' }}>Tersimpan otomatis di browser akun Anda</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowHistoryDrawer(false)}
+                style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', padding: '4px', borderRadius: '50%' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Tombol Buat Chat Baru di dalam Drawer */}
+            <div style={{ padding: '0.85rem 1rem', borderBottom: '1px solid #F1F5F9' }}>
+              <button
+                onClick={handleNewChat}
+                style={{
+                  width: '100%', padding: '0.7rem 1rem',
+                  background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)',
+                  border: 'none', borderRadius: '12px',
+                  color: 'white', fontWeight: 700, fontSize: '0.85rem',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                  cursor: 'pointer', boxShadow: '0 4px 12px rgba(255, 122, 3, 0.2)'
+                }}
+              >
+                <Plus size={16} />
+                <span>Mulai Percakapan Baru</span>
+              </button>
+            </div>
+
+            {/* List Riwayat Sesi */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem' }}>
+              {sessions.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94A3B8' }}>
+                  <MessageSquare size={36} style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
+                  <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 500 }}>Belum ada riwayat sesi.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {sessions.map((sess) => {
+                    const isActive = sess.id === activeSessionId;
+                    const msgCount = sess.messages?.length || 0;
+                    const lastMsg = sess.messages?.[sess.messages.length - 1]?.text || 'Belum ada pesan';
+
+                    return (
+                      <div
+                        key={sess.id}
+                        onClick={() => handleSelectSession(sess.id)}
+                        style={{
+                          padding: '0.85rem',
+                          borderRadius: '12px',
+                          border: isActive ? '1.5px solid #FF7A03' : '1px solid #E2E8F0',
+                          background: isActive ? '#FFF7ED' : '#FFFFFF',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          position: 'relative'
+                        }}
+                        onMouseOver={(e) => {
+                          if (!isActive) e.currentTarget.style.borderColor = '#CBD5E1';
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isActive) e.currentTarget.style.borderColor = '#E2E8F0';
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+                              <MessageSquare size={14} color={isActive ? '#FF7A03' : '#64748B'} />
+                              <h4 style={{ 
+                                margin: 0, fontSize: '0.85rem', fontWeight: 700, 
+                                color: isActive ? '#FF7A03' : '#1E293B',
+                                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' 
+                              }}>
+                                {sess.title}
+                              </h4>
+                            </div>
+                            
+                            <p style={{ 
+                              margin: '0 0 0.35rem 0', fontSize: '0.75rem', color: '#64748B',
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                            }}>
+                              {lastMsg}
+                            </p>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.68rem', color: '#94A3B8' }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <Clock size={11} /> {sess.createdAt}
+                              </span>
+                              <span>•</span>
+                              <span>{msgCount} pesan</span>
+                            </div>
+                          </div>
+
+                          {/* Tombol Hapus Sesi Individual */}
+                          <button
+                            onClick={(e) => handleDeleteSession(e, sess.id)}
+                            style={{
+                              background: 'transparent', border: 'none', color: '#94A3B8',
+                              cursor: 'pointer', padding: '4px', borderRadius: '6px',
+                              transition: 'color 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.color = '#EF4444'}
+                            onMouseOut={(e) => e.currentTarget.style.color = '#94A3B8'}
+                            title="Hapus sesi ini"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Drawer Footer: Bersihkan Semua Riwayat */}
+            {sessions.length > 0 && (
+              <div style={{ padding: '0.85rem 1rem', borderTop: '1px solid #E2E8F0', background: '#F8FAFC' }}>
+                <button
+                  onClick={handleClearAllHistory}
+                  style={{
+                    width: '100%', padding: '0.6rem',
+                    background: 'transparent', border: '1px solid #FECACA',
+                    borderRadius: '10px', color: '#DC2626',
+                    fontSize: '0.78rem', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                    cursor: 'pointer', transition: 'background 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = '#FEE2E2'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <Trash2 size={14} />
+                  <span>Bersihkan Semua Riwayat</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Conversation Feed */}
       <div style={{ 
@@ -640,6 +1013,15 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
         @keyframes fade-in {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slide-left {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+        @media (max-width: 480px) {
+          .hide-on-mobile {
+            display: none !important;
+          }
         }
       `}</style>
     </div>
