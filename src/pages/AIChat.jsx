@@ -12,10 +12,15 @@ const resolveLocalPointLabKnowledge = (query) => {
 
   // 1. Kerja Sama, Tempat Rapat, Event & Kemitraan (Cashback Cash) - Prioritas Utama
   if (q.includes('kerja sama') || q.includes('kerjasama') || q.includes('rapat') || q.includes('meeting') || q.includes('sewa') || q.includes('booking') || q.includes('event') || q.includes('acara') || q.includes('kemitraan') || q.includes('gathering') || q.includes('organisasi') || q.includes('komunitas') || q.includes('kolaborasi')) {
-    return "**Ya, tentu bisa! WarmingUp sangat terbuka untuk kerja sama.** 🤝\n\nArea WarmingUp / Ngolab di Lantai 4 FIT siap diajak kerja sama untuk berbagai keperluan, seperti:\n- **Tempat Rapat & Diskusi Organisasi / Komunitas Kampus**\n- **Acara Gathering, Meetup, Workshop & Event Mahasiswa**\n- **Penyediaan Konsumsi & Paket F&B Kegiatan**\n\n💰 **Keuntungan Spesial Kerja Sama:**\nSetiap kerja sama (misalnya menjadikan WarmingUp sebagai tempat rapat atau kegiatan organisasi) akan mendapatkan keuntungan **Cashback langsung dalam bentuk uang tunai (Cash)**!\n\nUntuk koordinasi jadwal tempat, paket makanan/minuman, serta ketentuan cashback tunai, Anda bisa langsung menghubungi pengelola atau datang ke meja kasir WarmingUp di Lantai 4 Gedung FIT Telkom University.";
+    return "**Ya, tentu bisa! WarmingUp sangat terbuka untuk kerja sama.** 🤝\n\nArea WarmingUp / Ngolab di Lantai 4 FIT siap diajak kerja sama untuk berbagai keperluan, seperti:\n- **Tempat Rapat & Diskusi Organisasi / Komunitas Kampus**\n- **Acara Gathering, Meetup, Workshop & Event Mahasiswa**\n- **Penyediaan Konsumsi & Paket F&B Kegiatan**\n\n💰 **Keuntungan Spesial Kerja Sama:**\nSetiap kerja sama (misalnya menjadikan WarmingUp sebagai tempat rapat atau kegiatan organisasi) akan mendapatkan keuntungan **Cashback langsung dalam bentuk uang tunai (Cash)**!\n\n📞 **Kontak Resmi untuk Kerja Sama & Reservasi:**\nSama dengan kontak resmi di Pusat Bantuan, silakan hubungi kami melalui:\n- **WhatsApp Support:** **+62 813-7488-1250**\n- **Instagram Resmi:** **@ngolabcafe**\n- **Langsung di Lokasi:** Meja Kasir WarmingUp Lantai 4 Gedung FIT Telkom University\n\nSilakan hubungi WhatsApp atau kunjungi kasir kami untuk koordinasi jadwal, paket konsumsi, dan pencairan cashback tunai ya! 😊";
   }
 
-  // 2. Metode Pembayaran & QRIS / Tunai
+  // 2. Kontak Resmi & Pusat Bantuan
+  if (q.includes('kontak') || q.includes('contact') || q.includes('hubungi') || q.includes('pusat bantuan') || q.includes('whatsapp') || q.includes('wa') || q.includes('instagram') || q.includes('ig') || q.includes('telepon') || q.includes('nomor') || q.includes('no hp') || q.includes('cs') || q.includes('admin') || q.includes('customer service') || q.includes('bantuan')) {
+    return "Berikut adalah **Kontak Resmi** WarmingUp / PointLab (sama dengan kontak di menu Pusat Bantuan):\n\n- **WhatsApp Support:** **+62 813-7488-1250**\n- **Instagram:** **@ngolabcafe**\n- **Lokasi Langsung:** Meja Kasir Lantai 4 Gedung Fakultas Ilmu Terapan (FIT), Telkom University\n\nSilakan hubungi WhatsApp atau Instagram di atas untuk info kerja sama, pemesanan tempat, atau bantuan lainnya! 😊";
+  }
+
+  // 3. Metode Pembayaran & QRIS / Tunai
   if (q.includes('qris') || q.includes('bayar') || q.includes('pembayaran') || q.includes('tunai') || q.includes('cash') || q.includes('uang') || q.includes('gopay') || q.includes('ovo') || q.includes('dana') || q.includes('debit')) {
     return "**Ya, tentu ada!** Pembayaran di WarmingUp / Ngolab Lantai 4 FIT mendukung metode:\n- **QRIS:** Bisa scan langsung menggunakan GoPay, OVO, DANA, ShopeePay, LinkAja, BCA, Mandiri, dan semua aplikasi m-Banking.\n- **Tunai (Cash):** Pembayaran langsung menggunakan uang tunai di meja kasir.\n\n💡 **Tips:** Sebelum membayar, jangan lupa buka aplikasi PointLab dan tunjukkan **QR Member** Anda ke kasir agar transaksi Anda mendapatkan poin loyalitas (setiap belanja Rp 1.000 = 1 poin)!";
   }
@@ -289,7 +294,7 @@ Informasi resmi:
 5. Poin: Belanja F&B Rp 1.000 = 1 poin. Bonus daftar 100 poin. Game harian Play & Earn.
 6. Tier: Classmate (0-5k), Study Buddy (5k-15k), Campus Star (15k-35k), Hall of Fame (35k+).
 7. Redeem: Voucher Kantin 50rb (5k poin), Cashback 20% (2.5k), Print 100 Lembar (3.5k), Parkir 1 Bulan (10k).
-8. Kerja Sama & Tempat Rapat: WarmingUp Lantai 4 FIT sangat terbuka untuk kerja sama (seperti tempat rapat organisasi/komunitas, gathering, atau event). Keuntungan kerja sama: bisa dapat cashback langsung dalam bentuk uang tunai (cash)!
+8. Kerja Sama, Tempat Rapat & Kontak Resmi: WarmingUp Lantai 4 FIT sangat terbuka untuk kerja sama (seperti tempat rapat organisasi/komunitas, gathering, atau event). Keuntungan kerja sama: bisa dapat cashback langsung dalam bentuk uang tunai (cash)! Kontak untuk kerja sama/bantuan (sama dengan di menu Pusat Bantuan): WhatsApp +62 813-7488-1250 dan Instagram @ngolabcafe, atau langsung ke kasir Lantai 4 FIT.
 Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
 
   // Auto-scroll
@@ -330,8 +335,13 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
   const callRagAPI = async (userText, recentMessages = []) => {
     const qLower = userText.toLowerCase();
 
-    // Prioritaskan knowledge lokal langsung jika pertanyaan jelas tentang kerja sama / tempat rapat / kemitraan
-    if (qLower.includes('kerja sama') || qLower.includes('kerjasama') || qLower.includes('rapat') || qLower.includes('meeting') || qLower.includes('gathering')) {
+    // Prioritaskan knowledge lokal langsung jika pertanyaan jelas tentang kerja sama / tempat rapat / kemitraan / kontak resmi
+    if (
+      qLower.includes('kerja sama') || qLower.includes('kerjasama') || 
+      qLower.includes('rapat') || qLower.includes('meeting') || qLower.includes('gathering') ||
+      qLower.includes('kontak') || qLower.includes('contact') || qLower.includes('whatsapp') || 
+      qLower.includes('instagram') || qLower.includes('hubungi') || qLower.includes('pusat bantuan')
+    ) {
       return resolveLocalPointLabKnowledge(userText);
     }
 
