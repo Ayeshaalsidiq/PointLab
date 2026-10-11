@@ -20,22 +20,27 @@ const resolveLocalPointLabKnowledge = (query) => {
     return "Berikut adalah **Kontak Resmi** WarmingUp / PointLab (sama dengan kontak di menu Pusat Bantuan):\n\n- **WhatsApp Support:** **+62 813-7488-1250**\n- **Instagram:** **@ngolabcafe**\n- **Lokasi Langsung:** Meja Kasir Lantai 4 Gedung Fakultas Ilmu Terapan (FIT), Telkom University\n\nSilakan hubungi WhatsApp atau Instagram di atas untuk info kerja sama, pemesanan tempat, atau bantuan lainnya! 😊";
   }
 
-  // 3. Cara Dapat Poin & Sistem Poin (Prioritas Tinggi - Inti PointLab)
-  if (q.includes('poin') || q.includes('point') || q.includes('kumpulin poin') || q.includes('kumpul poin') || q.includes('dapat poin') || q.includes('dapet poin') || q.includes('banyak poin') || q.includes('tambah poin') || q.includes('cari poin')) {
+  // 3. Penukaran Poin & Voucher (Tukar Poin / Redeem / Hadiah / Promo)
+  if (q.includes('tukar') || q.includes('redeem') || q.includes('voucher') || q.includes('hadiah') || q.includes('diskon') || q.includes('promo') || q.includes('kode promo')) {
+    return "Poin **PointLab** Anda bisa ditukarkan dengan berbagai reward & voucher potongan harga menarik:\n\n- **Diskon 20% Ayam Bakar:** Tukar 200 poin (min. order Rp 10.000)\n- **Beli Ayam Bakar Gratis Es Teh:** Tukar 400 poin\n- **Cashback 20%:** Tukar 2.500 poin\n- **Voucher Print 100 Lembar:** Tukar 3.500 poin\n- **Voucher Kantin Rp 50.000:** Tukar 5.000 poin\n- **Bebas Parkir 1 Bulan:** Tukar 10.000 poin\n- **Kode Promo Tambahan:** Gunakan kode **NGOLABin88**\n\n💡 **Cara Penukaran:** Buka aplikasi PointLab, masuk ke tab **Rewards / Voucher**, pilih voucher yang diinginkan, lalu klik Tukar Poin sebelum melakukan transaksi di kasir!";
+  }
+
+  // 4. Cara Dapat Poin & Sistem Kumpul Poin
+  if (q.includes('dapat poin') || q.includes('dapet poin') || q.includes('kumpulin poin') || q.includes('kumpul poin') || q.includes('banyak poin') || q.includes('tambah poin') || q.includes('cari poin') || q.includes('peroleh poin') || (q.includes('cara') && (q.includes('poin') || q.includes('point')))) {
     return "Cara mengumpulkan banyak poin di **PointLab**:\n- **Transaksi F&B di WarmingUp:** Setiap belanja makanan atau minuman di kasir Lantai 4 FIT, tunjukkan QR Member Anda di aplikasi (setiap Rp 1.000 = 1 poin loyalitas).\n- **Bonus Member Baru:** Otomatis mendapatkan bonus 100 poin gratis saat pertama kali mendaftar akun PointLab.\n- **Play & Earn (Game Harian):** Selesaikan mini-game seru di aplikasi setiap hari untuk mengumpulkan koin & poin tambahan.\n- **Study Session:** Catat sesi belajar atau nugas mandiri Anda di area coworking WarmingUp (misal 90 menit = 45 poin bonus).\n- **Naikkan Tier Loyalitas:** Semakin tinggi tier Anda (Classmate → Study Buddy → Campus Star → Hall of Fame), semakin besar multiplier pengali poin Anda (hingga 2x lipat per transaksi)!";
   }
 
-  // 4. Tier / Tingkatan Membership
+  // 5. Tier / Tingkatan Membership
   if (q.includes('tier') || q.includes('tingkat') || q.includes('level') || q.includes('membership') || (q.includes('member') && !q.includes('bayar'))) {
     return "Tingkatan Membership PointLab:\n- **Tier 1 - Classmate (0 - 5.000 Poin):** Multiplier 1x, promo reguler, voucher selamat datang gratis minuman.\n- **Tier 2 - Study Buddy (5.001 - 15.000 Poin):** Multiplier 1.2x, gratis upsize 1x/minggu, gratis topping, diskon 5% hari Selasa.\n- **Tier 3 - Campus Star (15.001 - 35.000 Poin):** Multiplier 1.5x, diskon tetap 5%, traktiran ultah gratis, antrean prioritas, akses secret menu.\n- **Tier 4 - Hall of Fame (35.001+ Poin):** Multiplier 2x, diskon tetap 15%, bebas upsize tanpa batas, voucher traktiran ultah Rp 150rb, meja VVIP, gratis kopi pagi.";
   }
 
-  // 5. Promo & Redeem Voucher
-  if (q.includes('promo') || q.includes('voucher') || q.includes('tukar') || q.includes('redeem') || q.includes('diskon') || q.includes('kode promo')) {
-    return "Promo & Penukaran Voucher di PointLab:\n- **Diskon 20% Ayam Bakar:** Tukar 200 poin (min. order Rp 10.000)\n- **Beli Ayam Bakar Gratis Es Teh:** Tukar 400 poin\n- **Voucher Kantin Rp 50.000:** Tukar 5.000 poin\n- **Cashback 20%:** Tukar 2.500 poin\n- **Voucher Print 100 Lembar:** Tukar 3.500 poin\n- **Parkir Gratis 1 Bulan:** Tukar 10.000 poin\n- **Kode Promo Diskon:** Gunakan kode **NGOLABin88**";
+  // 6. Penjelasan Poin Umum (Jika hanya bertanya 'poin' secara umum)
+  if (q.includes('poin') || q.includes('point')) {
+    return "**Poin PointLab** adalah sistem loyalitas untuk setiap transaksi F&B di WarmingUp Lantai 4 FIT.\n\n- **Cara Kumpul Poin:** Belanja F&B (Rp 1.000 = 1 poin), bonus pendaftaran (100 poin), mini-game harian Play & Earn, dan sesi study coworking.\n- **Bisa Ditukar Menjadi:** Diskon 20% Ayam Bakar (200 poin), Voucher Kantin Rp 50rb (5k poin), Cashback 20% (2.5k poin), Print 100 lembar (3.5k poin), dan Parkir 1 Bulan (10k poin).\n\nTunjukkan QR Member PointLab Anda di kasir sebelum membayar untuk mulai mengumpulkan poin!";
   }
 
-  // 6. Metode Pembayaran & QRIS / Tunai
+  // 7. Metode Pembayaran & QRIS / Tunai
   if (q.includes('qris') || (q.includes('bayar') && !q.includes('poin')) || q.includes('pembayaran') || q.includes('tunai') || /\bcash\b/i.test(q) || /\buang\b/i.test(q) || q.includes('gopay') || q.includes('ovo') || q.includes('dana') || q.includes('debit')) {
     return "**Ya, tentu ada!** Pembayaran di WarmingUp / Ngolab Lantai 4 FIT mendukung metode:\n- **QRIS:** Bisa scan langsung menggunakan GoPay, OVO, DANA, ShopeePay, LinkAja, BCA, Mandiri, dan semua aplikasi m-Banking.\n- **Tunai (Cash):** Pembayaran langsung menggunakan uang tunai di meja kasir.\n\n💡 **Tips:** Sebelum membayar, jangan lupa buka aplikasi PointLab dan tunjukkan **QR Member** Anda ke kasir agar transaksi Anda mendapatkan poin loyalitas (setiap belanja Rp 1.000 = 1 poin)!";
   }
