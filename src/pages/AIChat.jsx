@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ArrowLeft, Send, Sparkles, User, Copy, Check, 
   Utensils, MapPin, Coins, Ticket, History, Plus, 
-  Trash2, X, MessageSquare, Clock 
+  Trash2, X, MessageSquare, Clock, AlertTriangle 
 } from 'lucide-react';
 
 // Knowledge Resolver Mandiri jika RAG/Gemini mengalami kendala/limit
@@ -247,6 +247,7 @@ const AIChat = () => {
   });
 
   const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
+  const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
@@ -489,12 +490,15 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
   };
 
   const handleClearAllHistory = () => {
-    if (window.confirm("Hapus semua riwayat sesi obrolan?")) {
-      const brandNew = createNewSessionObject();
-      setSessions([brandNew]);
-      setActiveSessionId(brandNew.id);
-      setShowHistoryDrawer(false);
-    }
+    setShowClearConfirmModal(true);
+  };
+
+  const confirmClearAllHistory = () => {
+    const brandNew = createNewSessionObject();
+    setSessions([brandNew]);
+    setActiveSessionId(brandNew.id);
+    setShowClearConfirmModal(false);
+    setShowHistoryDrawer(false);
   };
 
   // Kartu rekomendasi pertanyaan
@@ -899,6 +903,92 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Pop-up Konfirmasi Hapus Seluruh Riwayat Chat */}
+      {showClearConfirmModal && (
+        <div 
+          style={{
+            position: 'fixed', inset: 0, zIndex: 120,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            padding: '1.5rem',
+            animation: 'fade-in 0.2s ease-out'
+          }}
+          onClick={() => setShowClearConfirmModal(false)}
+        >
+          <div 
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              padding: '2rem 1.75rem',
+              width: '100%',
+              maxWidth: '340px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #E2E8F0',
+              animation: 'fade-in 0.25s ease-out'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Warning Icon Badge */}
+            <div style={{
+              width: '60px', height: '60px', borderRadius: '50%',
+              background: '#FEE2E2', border: '1px solid #FECACA',
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              color: '#EF4444', marginBottom: '1.25rem',
+              boxShadow: '0 8px 20px rgba(239, 68, 68, 0.15)'
+            }}>
+              <AlertTriangle size={30} strokeWidth={2.2} />
+            </div>
+
+            {/* Title & Message */}
+            <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', fontWeight: 700, color: '#1E293B', fontFamily: 'Poppins, sans-serif' }}>
+              Hapus Semua Riwayat?
+            </h3>
+            <p style={{ margin: '0 0 1.75rem 0', fontSize: '0.875rem', color: '#64748B', lineHeight: 1.5 }}>
+              Seluruh sesi obrolan yang tersimpan akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.
+            </p>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
+              <button
+                onClick={() => setShowClearConfirmModal(false)}
+                style={{
+                  flex: 1, padding: '0.85rem',
+                  background: '#F1F5F9', border: 'none',
+                  borderRadius: '14px', color: '#64748B',
+                  fontWeight: 600, fontSize: '0.9rem',
+                  cursor: 'pointer', transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.background = '#E2E8F0'}
+                onMouseOut={(e) => e.currentTarget.style.background = '#F1F5F9'}
+              >
+                Batal
+              </button>
+              <button
+                onClick={confirmClearAllHistory}
+                style={{
+                  flex: 1, padding: '0.85rem',
+                  background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+                  border: 'none', borderRadius: '14px',
+                  color: '#FFFFFF', fontWeight: 700, fontSize: '0.9rem',
+                  cursor: 'pointer', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                  transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+              >
+                <Trash2 size={16} />
+                <span>Hapus Semua</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-import { Crown, CheckCircle2, ShieldCheck, Settings, LogOut, ChevronRight, Wallet, Clock, HelpCircle, QrCode, Star, Camera } from 'lucide-react';
+import { Crown, CheckCircle2, ShieldCheck, Settings, LogOut, ChevronRight, Wallet, Clock, HelpCircle, QrCode, Star, Camera, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useUser } from '../context/UserContext';
@@ -10,15 +10,59 @@ const Membership = () => {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showBenefitModal, setShowBenefitModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [profileName, setProfileName] = useState('Blair Nguyen');
-  const [profilePhone, setProfilePhone] = useState('+62 812-3456-7890');
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileName, setProfileName] = useState(() => localStorage.getItem('pointlab_user_name') || 'Blair Nguyen');
+  const [profilePhone, setProfilePhone] = useState(() => localStorage.getItem('pointlab_user_phone') || '+62 812-3456-7890');
+  const [profileImage, setProfileImage] = useState(() => localStorage.getItem('pointlab_user_image') || null);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('Profil berhasil diperbarui!');
+
+  // State untuk Edit Password
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setProfileImage(URL.createObjectURL(e.target.files[0]));
+      const url = URL.createObjectURL(e.target.files[0]);
+      setProfileImage(url);
+      localStorage.setItem('pointlab_user_image', url);
     }
+  };
+
+  const handleSaveProfile = () => {
+    // Validasi Password jika diisi
+    if (password.trim() || confirmPassword.trim()) {
+      if (password.length < 6) {
+        setPasswordError('Password baru minimal 6 karakter.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setPasswordError('Konfirmasi password tidak cocok.');
+        return;
+      }
+      localStorage.setItem('pointlab_user_password', password);
+    }
+
+    localStorage.setItem('pointlab_user_name', profileName);
+    localStorage.setItem('pointlab_user_phone', profilePhone);
+    
+    // Reset input password & error
+    setPassword('');
+    setConfirmPassword('');
+    setPasswordError('');
+    setShowEditProfileModal(false);
+    setToastMessage('Profil & password berhasil diperbarui!');
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const handleCloseEditProfile = () => {
+    setPassword('');
+    setConfirmPassword('');
+    setPasswordError('');
+    setShowEditProfileModal(false);
   };
 
   return (
@@ -188,38 +232,102 @@ const Membership = () => {
 
       {/* Edit Profile Modal */}
       {showEditProfileModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
-          <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-            <h3 style={{ margin: '0 0 1.5rem 0', color: '#1E293B', textAlign: 'center', fontSize: '1.25rem', fontWeight: 700 }}>Edit Profil</h3>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.65)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(5px)' }}>
+          <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '1.75rem', width: '100%', maxWidth: '340px', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <h3 style={{ margin: '0 0 1.25rem 0', color: '#1E293B', textAlign: 'center', fontSize: '1.25rem', fontWeight: 700 }}>Edit Profil</h3>
             
             {/* Edit Profile Picture */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <div style={{ position: 'relative', width: '80px', height: '80px', marginBottom: '0.75rem' }}>
-                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white', fontSize: '2rem', fontWeight: 700, boxShadow: '0 8px 20px rgba(59, 130, 246, 0.3)', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <div style={{ position: 'relative', width: '76px', height: '76px', marginBottom: '0.5rem' }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white', fontSize: '1.85rem', fontWeight: 700, boxShadow: '0 8px 20px rgba(59, 130, 246, 0.3)', overflow: 'hidden' }}>
                   {profileImage ? (
                     <img src={profileImage} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     profileName.charAt(0)
                   )}
                 </div>
-                <label htmlFor="profile-upload" style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'white', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', cursor: 'pointer', border: '3px solid white', color: '#3B82F6', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                  <Camera size={16} strokeWidth={2.5} />
+                <label htmlFor="profile-upload" style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'white', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', cursor: 'pointer', border: '3px solid white', color: '#3B82F6', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                  <Camera size={15} strokeWidth={2.5} />
                 </label>
                 <input id="profile-upload" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageChange} />
               </div>
               <label htmlFor="profile-upload" style={{ fontSize: '0.8rem', color: '#3B82F6', fontWeight: 600, cursor: 'pointer' }}>Ganti Foto</label>
             </div>
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#64748B', fontWeight: 500 }}>Nama Lengkap</label>
-              <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: '0.95rem', color: '#1E293B' }} />
+
+            {/* Nama Lengkap */}
+            <div style={{ marginBottom: '0.85rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>Nama Lengkap</label>
+              <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} style={{ width: '100%', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: '0.9rem', color: '#1E293B' }} />
             </div>
-            <div style={{ marginBottom: '2rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#64748B', fontWeight: 500 }}>Nomor Telepon</label>
-              <input type="tel" value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} style={{ width: '100%', padding: '0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: '0.95rem', color: '#1E293B' }} />
+
+            {/* Nomor Telepon */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>Nomor Telepon</label>
+              <input type="tel" value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} style={{ width: '100%', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: '0.9rem', color: '#1E293B' }} />
             </div>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button onClick={() => setShowEditProfileModal(false)} style={{ flex: 1, padding: '0.85rem', background: '#F1F5F9', color: '#64748B', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Batal</button>
-              <button onClick={() => { setShowEditProfileModal(false); setShowToast(true); setTimeout(() => setShowToast(false), 3000); }} style={{ flex: 1, padding: '0.85rem', background: '#3B82F6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)' }}>Simpan</button>
+
+            {/* Kolom Edit Password */}
+            <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.25rem' }}>
+                <Lock size={15} color="#3B82F6" />
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1E293B' }}>Ganti Password</span>
+              </div>
+              <p style={{ margin: '0 0 0.85rem 0', fontSize: '0.72rem', color: '#94A3B8', lineHeight: 1.4 }}>
+                Kosongkan jika tidak ingin mengubah password akun Anda.
+              </p>
+
+              {/* Password Baru */}
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.78rem', color: '#64748B', fontWeight: 500 }}>Password Baru</label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type={showNewPassword ? "text" : "password"} 
+                    placeholder="Masukkan password baru"
+                    value={password} 
+                    onChange={(e) => { setPassword(e.target.value); setPasswordError(''); }} 
+                    style={{ width: '100%', padding: '0.75rem 2.4rem 0.75rem 0.85rem', borderRadius: '12px', border: passwordError ? '1px solid #EF4444' : '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: '0.88rem', color: '#1E293B' }} 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
+                  >
+                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Konfirmasi Password Baru */}
+              <div style={{ marginBottom: '0.25rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.78rem', color: '#64748B', fontWeight: 500 }}>Konfirmasi Password Baru</label>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type={showConfirmPassword ? "text" : "password"} 
+                    placeholder="Ulangi password baru"
+                    value={confirmPassword} 
+                    onChange={(e) => { setConfirmPassword(e.target.value); setPasswordError(''); }} 
+                    style={{ width: '100%', padding: '0.75rem 2.4rem 0.75rem 0.85rem', borderRadius: '12px', border: passwordError ? '1px solid #EF4444' : '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: '0.88rem', color: '#1E293B' }} 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
+                  >
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {passwordError && (
+                <p style={{ margin: '0.4rem 0 0 0', color: '#EF4444', fontSize: '0.75rem', fontWeight: 600 }}>
+                  {passwordError}
+                </p>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button onClick={handleCloseEditProfile} style={{ flex: 1, padding: '0.8rem', background: '#F1F5F9', color: '#64748B', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>Batal</button>
+              <button onClick={handleSaveProfile} style={{ flex: 1, padding: '0.8rem', background: '#3B82F6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)' }}>Simpan</button>
             </div>
           </div>
         </div>
