@@ -37,7 +37,7 @@ const resolveLocalPointLabKnowledge = (query) => {
 
   // 6. Fasilitas / WiFi / Coworking / Colokan / Nugas
   if (q.includes('wifi') || q.includes('colokan') || q.includes('listrik') || q.includes('nugas') || q.includes('coworking') || q.includes('fasilitas') || q.includes('meja') || q.includes('belajar')) {
-    return "WarmingUp Lantai 4 FIT dilengkapi area **Coworking & Student Lounge** yang sangat nyaman untuk mahasiswa, dengan fasilitas:\n- Colokan listrik di area tempat duduk untuk laptop/HP.\n- Akses internet WiFi cepat.\n- Meja belajar yang nyaman untuk santai maupun diskusi kelompok.\n- Ruangan bersih, ber-AC, dan dekat dengan area F&B.";
+    return "WarmingUp Lantai 4 FIT dilengkapi area **Coworking & Student Lounge** yang sangat nyaman untuk mahasiswa, dengan fasilitas:\n- Colokan listrik di area tempat duduk untuk laptop/HP.\n- Akses internet WiFi cepat.\n- Meja belajar yang nyaman untuk santai maupun diskusi kelompok.\n- Ruangan bersih, nyaman, dan dekat dengan area F&B.";
   }
 
   // 7. Menu Pre-Order (PO)
@@ -132,7 +132,12 @@ const sanitizeAndFormatResponse = (text, userQuery = '') => {
   cleaned = cleaned.replace(/^\|[-:\s|]+\|$/gm, '');
   cleaned = cleaned.replace(/^\|\s*(.*?)\s*\|$/gm, '- $1');
 
-  // 6. Rapikan baris kosong yang berlebihan
+  // 6. Hapus penyebutan ber-AC agar selalu akurat dengan kondisi riil
+  cleaned = cleaned.replace(/,\s*ber-ac/gi, '');
+  cleaned = cleaned.replace(/ber-ac,\s*/gi, '');
+  cleaned = cleaned.replace(/\s*ber-ac\s*/gi, ' ');
+
+  // 7. Rapikan baris kosong yang berlebihan
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
 
   return cleaned.trim();
