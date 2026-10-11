@@ -563,13 +563,13 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
         </div>
       </header>
 
-      {/* Slide-Over Drawer Riwayat Sesi */}
+      {/* Slide-Over Drawer Riwayat Sesi (PointLab Glassmorphism Modern) */}
       {showHistoryDrawer && (
         <div 
           style={{
             position: 'fixed', inset: 0, zIndex: 100,
-            background: 'rgba(15, 23, 42, 0.5)',
-            backdropFilter: 'blur(4px)',
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(8px)',
             display: 'flex', justifyContent: 'flex-end',
             animation: 'fade-in 0.2s ease-out'
           }}
@@ -577,158 +577,264 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
         >
           <div 
             style={{
-              width: '100%', maxWidth: '360px', height: '100%',
-              background: '#FFFFFF',
+              width: '100%', maxWidth: '380px', height: '100%',
+              background: 'linear-gradient(180deg, #1A1B27 0%, #111420 100%)',
+              borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
               display: 'flex', flexDirection: 'column',
-              boxShadow: '-10px 0 30px rgba(0, 0, 0, 0.15)',
-              animation: 'slide-left 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+              boxShadow: '-15px 0 40px rgba(0, 0, 0, 0.5)',
+              animation: 'slide-left 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+              position: 'relative', overflow: 'hidden'
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Top Glowing Ambient Accents */}
+            <div style={{ position: 'absolute', top: '-60px', right: '-40px', width: '180px', height: '180px', background: 'radial-gradient(circle, rgba(255, 122, 3, 0.25) 0%, transparent 70%)', filter: 'blur(35px)', pointerEvents: 'none' }}></div>
+            <div style={{ position: 'absolute', bottom: '15%', left: '-50px', width: '160px', height: '160px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%)', filter: 'blur(35px)', pointerEvents: 'none' }}></div>
+
+            {/* Top Brand Stripe */}
+            <div style={{ height: '3px', background: 'linear-gradient(90deg, #FF7A03 0%, #FFA34D 50%, #3B82F6 100%)', width: '100%', zIndex: 3 }}></div>
+
             {/* Drawer Header */}
             <div style={{
-              padding: '1.25rem', borderBottom: '1px solid #E2E8F0',
+              padding: '1.25rem 1.25rem 1rem 1.25rem',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: '#F8FAFC'
+              position: 'relative', zIndex: 2
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#FFF7ED', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ 
+                  width: '38px', height: '38px', borderRadius: '12px', 
+                  background: 'linear-gradient(135deg, rgba(255, 122, 3, 0.2) 0%, rgba(255, 122, 3, 0.05) 100%)', 
+                  border: '1px solid rgba(255, 122, 3, 0.35)',
+                  display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  boxShadow: '0 4px 12px rgba(255, 122, 3, 0.15)'
+                }}>
                   <History size={18} color="#FF7A03" />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#1E293B' }}>Riwayat Sesi Chat</h3>
-                  <span style={{ fontSize: '0.72rem', color: '#64748B' }}>Tersimpan otomatis di browser akun Anda</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.3px', fontFamily: 'Poppins, sans-serif' }}>
+                      Riwayat Obrolan
+                    </h3>
+                    <span style={{ 
+                      fontSize: '0.65rem', background: 'rgba(255, 122, 3, 0.15)', 
+                      color: '#FFA34D', border: '1px solid rgba(255, 122, 3, 0.3)', 
+                      borderRadius: '10px', padding: '1px 6px', fontWeight: 600 
+                    }}>
+                      {sessions.length} Sesi
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '0.72rem', color: '#94A3B8', marginTop: '2px', display: 'block' }}>
+                    Tersimpan otomatis di browser akun Anda
+                  </span>
                 </div>
               </div>
+
               <button 
                 onClick={() => setShowHistoryDrawer(false)}
-                style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', padding: '4px', borderRadius: '50%' }}
+                style={{ 
+                  width: '32px', height: '32px', borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.08)', 
+                  color: '#94A3B8', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.color = '#FFFFFF'; }}
+                onMouseOut={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)'; e.currentTarget.style.color = '#94A3B8'; }}
+                title="Tutup"
               >
-                <X size={20} />
+                <X size={16} />
               </button>
             </div>
 
-            {/* Tombol Buat Chat Baru di dalam Drawer */}
-            <div style={{ padding: '0.85rem 1rem', borderBottom: '1px solid #F1F5F9' }}>
+            {/* CTA Button: Mulai Percakapan Baru */}
+            <div style={{ padding: '1rem 1.25rem 0.75rem 1.25rem', position: 'relative', zIndex: 2 }}>
               <button
                 onClick={handleNewChat}
                 style={{
-                  width: '100%', padding: '0.7rem 1rem',
+                  width: '100%', padding: '0.8rem 1rem',
                   background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)',
-                  border: 'none', borderRadius: '12px',
-                  color: 'white', fontWeight: 700, fontSize: '0.85rem',
+                  border: 'none', borderRadius: '14px',
+                  color: 'white', fontWeight: 700, fontSize: '0.875rem',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                  cursor: 'pointer', boxShadow: '0 4px 12px rgba(255, 122, 3, 0.2)'
+                  cursor: 'pointer', boxShadow: '0 8px 20px rgba(255, 122, 3, 0.3)',
+                  transition: 'all 0.2s', letterSpacing: '0.2px'
                 }}
+                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(255, 122, 3, 0.4)'; }}
+                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(255, 122, 3, 0.3)'; }}
               >
-                <Plus size={16} />
+                <Plus size={18} strokeWidth={2.5} />
                 <span>Mulai Percakapan Baru</span>
               </button>
             </div>
 
+            {/* Section Title */}
+            <div style={{ padding: '0.5rem 1.25rem 0.25rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 2 }}>
+              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748B', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+                Daftar Percakapan
+              </span>
+              <span style={{ fontSize: '0.68rem', color: '#64748B' }}>
+                Klik untuk membuka
+              </span>
+            </div>
+
             {/* List Riwayat Sesi */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', zIndex: 2 }}>
               {sessions.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94A3B8' }}>
-                  <MessageSquare size={36} style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
-                  <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 500 }}>Belum ada riwayat sesi.</p>
+                <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#64748B' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 1rem' }}>
+                    <MessageSquare size={24} color="#64748B" />
+                  </div>
+                  <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', fontWeight: 600, color: '#94A3B8' }}>Belum ada obrolan</p>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748B' }}>Mulai pertanyaan pertama Anda ke Ngolab AI</p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {sessions.map((sess) => {
-                    const isActive = sess.id === activeSessionId;
-                    const msgCount = sess.messages?.length || 0;
-                    const lastMsg = sess.messages?.[sess.messages.length - 1]?.text || 'Belum ada pesan';
+                sessions.map((sess) => {
+                  const isActive = sess.id === activeSessionId;
+                  const msgCount = sess.messages?.length || 0;
+                  const lastMsg = sess.messages?.[sess.messages.length - 1]?.text || 'Belum ada pesan';
 
-                    return (
-                      <div
-                        key={sess.id}
-                        onClick={() => handleSelectSession(sess.id)}
-                        style={{
-                          padding: '0.85rem',
-                          borderRadius: '12px',
-                          border: isActive ? '1.5px solid #FF7A03' : '1px solid #E2E8F0',
-                          background: isActive ? '#FFF7ED' : '#FFFFFF',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          position: 'relative'
-                        }}
-                        onMouseOver={(e) => {
-                          if (!isActive) e.currentTarget.style.borderColor = '#CBD5E1';
-                        }}
-                        onMouseOut={(e) => {
-                          if (!isActive) e.currentTarget.style.borderColor = '#E2E8F0';
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
-                              <MessageSquare size={14} color={isActive ? '#FF7A03' : '#64748B'} />
-                              <h4 style={{ 
-                                margin: 0, fontSize: '0.85rem', fontWeight: 700, 
-                                color: isActive ? '#FF7A03' : '#1E293B',
-                                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' 
-                              }}>
-                                {sess.title}
-                              </h4>
-                            </div>
-                            
-                            <p style={{ 
-                              margin: '0 0 0.35rem 0', fontSize: '0.75rem', color: '#64748B',
-                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                  return (
+                    <div
+                      key={sess.id}
+                      onClick={() => handleSelectSession(sess.id)}
+                      style={{
+                        padding: '0.9rem 1rem',
+                        borderRadius: '14px',
+                        border: isActive ? '1px solid rgba(255, 122, 3, 0.45)' : '1px solid rgba(255, 255, 255, 0.06)',
+                        background: isActive 
+                          ? 'linear-gradient(135deg, rgba(255, 122, 3, 0.12) 0%, rgba(255, 122, 3, 0.04) 100%)' 
+                          : 'rgba(30, 41, 59, 0.45)',
+                        backdropFilter: 'blur(10px)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        boxShadow: isActive ? '0 4px 15px rgba(255, 122, 3, 0.1)' : 'none'
+                      }}
+                      onMouseOver={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = 'rgba(30, 41, 59, 0.75)';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = 'rgba(30, 41, 59, 0.45)';
+                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.06)';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                        }
+                      }}
+                    >
+                      {/* Active indicator bar */}
+                      {isActive && (
+                        <div style={{
+                          position: 'absolute', left: '0', top: '12px', bottom: '12px',
+                          width: '3.5px', background: '#FF7A03', borderRadius: '0 4px 4px 0'
+                        }}></div>
+                      )}
+
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.65rem' }}>
+                        <div style={{ flex: 1, minWidth: 0, paddingLeft: isActive ? '4px' : '0' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.3rem' }}>
+                            <MessageSquare size={14} color={isActive ? '#FF7A03' : '#94A3B8'} style={{ flexShrink: 0 }} />
+                            <h4 style={{ 
+                              margin: 0, fontSize: '0.875rem', fontWeight: 600, 
+                              color: isActive ? '#FFA34D' : '#F1F5F9',
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' 
                             }}>
-                              {lastMsg}
-                            </p>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.68rem', color: '#94A3B8' }}>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <Clock size={11} /> {sess.createdAt}
+                              {sess.title}
+                            </h4>
+                            {isActive && (
+                              <span style={{ 
+                                marginLeft: 'auto', background: '#FF7A03', color: 'white', 
+                                fontSize: '0.62rem', fontWeight: 700, padding: '1px 6px', 
+                                borderRadius: '8px', letterSpacing: '0.2px' 
+                              }}>
+                                Aktif
                               </span>
-                              <span>•</span>
-                              <span>{msgCount} pesan</span>
-                            </div>
+                            )}
                           </div>
+                          
+                          <p style={{ 
+                            margin: '0 0 0.5rem 0', fontSize: '0.76rem', color: '#94A3B8',
+                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                            lineHeight: 1.4
+                          }}>
+                            {lastMsg}
+                          </p>
 
-                          {/* Tombol Hapus Sesi Individual */}
-                          <button
-                            onClick={(e) => handleDeleteSession(e, sess.id)}
-                            style={{
-                              background: 'transparent', border: 'none', color: '#94A3B8',
-                              cursor: 'pointer', padding: '4px', borderRadius: '6px',
-                              transition: 'color 0.2s'
-                            }}
-                            onMouseOver={(e) => e.currentTarget.style.color = '#EF4444'}
-                            onMouseOut={(e) => e.currentTarget.style.color = '#94A3B8'}
-                            title="Hapus sesi ini"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.7rem', color: '#64748B' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <Clock size={11} color="#64748B" /> {sess.createdAt}
+                            </span>
+                            <span>•</span>
+                            <span>{msgCount} pesan</span>
+                          </div>
                         </div>
+
+                        {/* Tombol Hapus Sesi Individual */}
+                        <button
+                          onClick={(e) => handleDeleteSession(e, sess.id)}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.06)', 
+                            color: '#64748B', cursor: 'pointer', width: '28px', height: '28px', 
+                            borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                            transition: 'all 0.2s', flexShrink: 0
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.color = '#EF4444';
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.color = '#64748B';
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.06)';
+                          }}
+                          title="Hapus sesi ini"
+                        >
+                          <Trash2 size={13} />
+                        </button>
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })
               )}
             </div>
 
             {/* Drawer Footer: Bersihkan Semua Riwayat */}
             {sessions.length > 0 && (
-              <div style={{ padding: '0.85rem 1rem', borderTop: '1px solid #E2E8F0', background: '#F8FAFC' }}>
+              <div style={{ 
+                padding: '0.85rem 1.25rem', 
+                borderTop: '1px solid rgba(255, 255, 255, 0.06)', 
+                background: 'rgba(15, 23, 42, 0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                zIndex: 2
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: '#94A3B8' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 6px #10B981' }}></span>
+                  <span>Tersimpan di Browser</span>
+                </div>
+
                 <button
                   onClick={handleClearAllHistory}
                   style={{
-                    width: '100%', padding: '0.6rem',
-                    background: 'transparent', border: '1px solid #FECACA',
-                    borderRadius: '10px', color: '#DC2626',
-                    fontSize: '0.78rem', fontWeight: 600,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
-                    cursor: 'pointer', transition: 'background 0.2s'
+                    background: 'transparent', border: 'none',
+                    color: '#94A3B8', fontSize: '0.75rem', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', gap: '0.35rem',
+                    cursor: 'pointer', transition: 'all 0.2s', padding: '4px 8px', borderRadius: '6px'
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.background = '#FEE2E2'}
-                  onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                  onMouseOver={(e) => { 
+                    e.currentTarget.style.color = '#EF4444'; 
+                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; 
+                  }}
+                  onMouseOut={(e) => { 
+                    e.currentTarget.style.color = '#94A3B8'; 
+                    e.currentTarget.style.background = 'transparent'; 
+                  }}
                 >
-                  <Trash2 size={14} />
-                  <span>Bersihkan Semua Riwayat</span>
+                  <Trash2 size={13} />
+                  <span>Bersihkan Semua</span>
                 </button>
               </div>
             )}
