@@ -10,42 +10,47 @@ import {
 const resolveLocalPointLabKnowledge = (query) => {
   const q = query.toLowerCase();
 
-  // 1. Metode Pembayaran & QRIS / Tunai
+  // 1. Kerja Sama, Tempat Rapat, Event & Kemitraan (Cashback Cash) - Prioritas Utama
+  if (q.includes('kerja sama') || q.includes('kerjasama') || q.includes('rapat') || q.includes('meeting') || q.includes('sewa') || q.includes('booking') || q.includes('event') || q.includes('acara') || q.includes('kemitraan') || q.includes('gathering') || q.includes('organisasi') || q.includes('komunitas') || q.includes('kolaborasi')) {
+    return "**Ya, tentu bisa! WarmingUp sangat terbuka untuk kerja sama.** 🤝\n\nArea WarmingUp / Ngolab di Lantai 4 FIT siap diajak kerja sama untuk berbagai keperluan, seperti:\n- **Tempat Rapat & Diskusi Organisasi / Komunitas Kampus**\n- **Acara Gathering, Meetup, Workshop & Event Mahasiswa**\n- **Penyediaan Konsumsi & Paket F&B Kegiatan**\n\n💰 **Keuntungan Spesial Kerja Sama:**\nSetiap kerja sama (misalnya menjadikan WarmingUp sebagai tempat rapat atau kegiatan organisasi) akan mendapatkan keuntungan **Cashback langsung dalam bentuk uang tunai (Cash)**!\n\nUntuk koordinasi jadwal tempat, paket makanan/minuman, serta ketentuan cashback tunai, Anda bisa langsung menghubungi pengelola atau datang ke meja kasir WarmingUp di Lantai 4 Gedung FIT Telkom University.";
+  }
+
+  // 2. Metode Pembayaran & QRIS / Tunai
   if (q.includes('qris') || q.includes('bayar') || q.includes('pembayaran') || q.includes('tunai') || q.includes('cash') || q.includes('uang') || q.includes('gopay') || q.includes('ovo') || q.includes('dana') || q.includes('debit')) {
     return "**Ya, tentu ada!** Pembayaran di WarmingUp / Ngolab Lantai 4 FIT mendukung metode:\n- **QRIS:** Bisa scan langsung menggunakan GoPay, OVO, DANA, ShopeePay, LinkAja, BCA, Mandiri, dan semua aplikasi m-Banking.\n- **Tunai (Cash):** Pembayaran langsung menggunakan uang tunai di meja kasir.\n\n💡 **Tips:** Sebelum membayar, jangan lupa buka aplikasi PointLab dan tunjukkan **QR Member** Anda ke kasir agar transaksi Anda mendapatkan poin loyalitas (setiap belanja Rp 1.000 = 1 poin)!";
   }
 
-  // 2. Lokasi & Cara Pesan (Pertanyaan Kombinasi)
+  // 3. Lokasi & Cara Pesan (Pertanyaan Kombinasi)
   if ((q.includes('lokasi') || q.includes('dimana') || q.includes('di mana') || q.includes('tempat') || q.includes('alamat')) && (q.includes('pesan') || q.includes('order') || q.includes('beli'))) {
     return "Lokasi WarmingUp / Ngolab berada di **Lantai 4 Fakultas Ilmu Terapan (FIT), Telkom University**.\n\nUntuk memesan makanan dan minuman, Anda bisa memesan melalui:\n- **Kiosk Sensor Gestur (Gesture-Eats):** Pesan mandiri di mesin Kiosk depan outlet tanpa sentuh layar (cukup arahkan tangan).\n- **Langsung di Meja Kasir:** Datang ke kasir Lantai 4 FIT, pilih menu, dan bayar via Tunai atau QRIS. Tunjukkan QR member PointLab sebelum bayar agar mendapat poin reward!";
   }
 
-  // 3. Lokasi saja
-  if (q.includes('lokasi') || q.includes('dimana') || q.includes('di mana') || q.includes('tempat') || q.includes('posisi') || q.includes('gedung') || q.includes('lantai') || q.includes('alamat')) {
+  // 4. Lokasi saja
+  if (q.includes('lokasi') || q.includes('dimana') || q.includes('di mana') || q.includes('posisi') || q.includes('gedung') || q.includes('lantai') || q.includes('alamat') || (q.includes('tempat') && !q.includes('makan'))) {
     return "Lokasi **WarmingUp / Ngolab** berada di **Lantai 4 Gedung Fakultas Ilmu Terapan (FIT), Telkom University**. Tempat ini menyediakan kantin modern F&B sekaligus coworking lounge untuk mahasiswa.";
   }
 
-  // 4. Cara Pesan / Order / Kiosk
+  // 5. Cara Pesan / Order / Kiosk
   if (q.includes('cara pesan') || q.includes('cara memesan') || q.includes('cara order') || q.includes('pesan makan') || q.includes('order makan') || q.includes('kiosk') || q.includes('sensor') || q.includes('gestur') || q.includes('gesture')) {
     return "Cara memesan makanan & minuman di WarmingUp:\n- **Kiosk Sensor Gestur:** Gunakan mesin Kiosk di depan outlet, pilih menu dengan gestur tangan tanpa menyentuh layar.\n- **Meja Kasir Langsung:** Datang ke kasir Lantai 4 FIT, pilih menu, dan bayar dengan Tunai atau QRIS.\n- **Pre-Order (PO):** Pesan menu PO sebelum batas waktu pemesanan.\n\n💡 Tips: Tunjukkan QR Code PointLab ke kasir untuk mengumpulkan poin reward!";
   }
 
-  // 5. Jam Buka / Jam Operasional
+  // 6. Jam Buka / Jam Operasional
   if (q.includes('jam') || q.includes('buka') || q.includes('tutup') || q.includes('operasional') || q.includes('jadwal') || q.includes('hari apa')) {
     return "WarmingUp / Ngolab beroperasi setiap hari **Senin – Jumat pukul 08.00 – 17.00 WIB** di Lantai 4 Gedung FIT Telkom University. (Tutup pada hari Sabtu, Minggu, dan hari libur nasional).";
   }
 
-  // 6. Fasilitas / WiFi / Coworking / Colokan / Nugas
+  // 7. Fasilitas / WiFi / Coworking / Colokan / Nugas
   if (q.includes('wifi') || q.includes('colokan') || q.includes('listrik') || q.includes('nugas') || q.includes('coworking') || q.includes('fasilitas') || q.includes('meja') || q.includes('belajar')) {
     return "WarmingUp Lantai 4 FIT dilengkapi area **Coworking & Student Lounge** yang sangat nyaman untuk mahasiswa, dengan fasilitas:\n- Colokan listrik di area tempat duduk untuk laptop/HP.\n- Akses internet WiFi cepat.\n- Meja belajar yang nyaman untuk santai maupun diskusi kelompok.\n- Ruangan bersih, nyaman, dan dekat dengan area F&B.";
   }
 
-  // 7. Menu Pre-Order (PO)
+  // 8. Menu Pre-Order (PO)
   if (q.includes('po') || q.includes('pre order') || q.includes('pre-order') || q.includes('dok dok') || q.includes('padang')) {
     return "Menu Spesial Pre-Order (PO) di WarmingUp:\n- **Mie Dok Dok (PO)** — Rp 17.000 (mie kuah kental gurih dengan bumbu khas hangat)\n- **Nasi Padang (PO Jum'at Berkah)** — Rp 15.000 (paket lengkap lezat khas Minang)\n\nSilakan pesan menu PO di kasir sebelum batas waktu pemesanan harian!";
   }
 
-  // 8. Menu Spesifik & Rekomendasi
+  // 9. Menu Spesifik & Rekomendasi
   if (q.includes('menu') || q.includes('makan') || q.includes('minum') || q.includes('harga') || q.includes('ayam') || q.includes('nasi goreng') || q.includes('es teh') || q.includes('pedas') || q.includes('murah') || q.includes('enak') || q.includes('rekomendasi') || q.includes('favorit') || q.includes('best seller')) {
     if (q.includes('rekomendasi') || q.includes('enak') || q.includes('favorit') || q.includes('best seller')) {
       return "Rekomendasi menu terfavorit di WarmingUp / Ngolab:\n1. **Ayam Bakar (Rp 23.000)** — Daging empuk dengan bumbu bakar meresap lezat.\n2. **Nasi Goreng Gila (Rp 14.000)** — Sangat pedas dan gurih, menu wajib pencinta cabai!\n3. **Es Teh Manis (Rp 7.000)** — Minuman manis dingin yang segar.\n\nUntuk menu Pre-Order mingguan ada **Mie Dok Dok (Rp 17.000)** dan **Nasi Padang (Rp 15.000)**.";
@@ -68,28 +73,28 @@ const resolveLocalPointLabKnowledge = (query) => {
     return "Berikut adalah daftar menu resmi di WarmingUp / Ngolab:\n\n**Makanan & Menu Utama:**\n- **Ayam Bakar** — Rp 23.000 (bumbu bakar khas lezat)\n- **Nasi Goreng Gila** — Rp 14.000 (sangat pedas, favorit mahasiswa)\n- **Nasi Goreng Reguler** — Rp 15.000 (gurih nikmat khas Ngolab)\n\n**Minuman:**\n- **Es Teh Manis** — Rp 7.000 (dingin segar manis pas)\n\n**Menu Spesial Pre-Order (PO):**\n- **Mie Dok Dok (PO)** — Rp 17.000\n- **Nasi Padang (PO Jum'at Berkah)** — Rp 15.000";
   }
 
-  // 9. Cara Dapat Poin & Sistem Poin
+  // 10. Cara Dapat Poin & Sistem Poin
   if (q.includes('dapat poin') || q.includes('dapet poin') || q.includes('kumpulin poin') || q.includes('kumpul poin') || q.includes('poin') || q.includes('point')) {
     return "Cara mendapatkan poin di PointLab:\n- **Transaksi F&B:** Tunjukkan QR Code member di kasir Lantai 4 FIT saat bertransaksi (setiap Rp 1.000 = 1 poin).\n- **Bonus Member Baru:** Otomatis mendapat 100 poin saat pendaftaran.\n- **Play & Earn:** Selesaikan tantangan game harian di aplikasi PointLab.\n- **Study Session:** Belajar mandiri di area coworking (misal 90 menit = 45 poin).";
   }
 
-  // 10. Tier / Tingkatan Membership
+  // 11. Tier / Tingkatan Membership
   if (q.includes('tier') || q.includes('tingkat') || q.includes('level') || q.includes('membership') || q.includes('member')) {
     return "Tingkatan Membership PointLab:\n- **Tier 1 - Classmate (0 - 5.000 Poin):** Multiplier 1x, promo reguler, voucher selamat datang gratis minuman.\n- **Tier 2 - Study Buddy (5.001 - 15.000 Poin):** Multiplier 1.2x, gratis upsize 1x/minggu, gratis topping, diskon 5% hari Selasa.\n- **Tier 3 - Campus Star (15.001 - 35.000 Poin):** Multiplier 1.5x, diskon tetap 5%, traktiran ultah gratis, antrean prioritas, akses secret menu.\n- **Tier 4 - Hall of Fame (35.001+ Poin):** Multiplier 2x, diskon tetap 15%, bebas upsize tanpa batas, voucher traktiran ultah Rp 150rb, meja VVIP, gratis kopi pagi.";
   }
 
-  // 11. Promo & Redeem Voucher
+  // 12. Promo & Redeem Voucher
   if (q.includes('promo') || q.includes('voucher') || q.includes('tukar') || q.includes('redeem') || q.includes('diskon') || q.includes('kode promo')) {
     return "Promo & Penukaran Voucher di PointLab:\n- **Diskon 20% Ayam Bakar:** Tukar 200 poin (min. order Rp 10.000)\n- **Beli Ayam Bakar Gratis Es Teh:** Tukar 400 poin\n- **Voucher Kantin Rp 50.000:** Tukar 5.000 poin\n- **Cashback 20%:** Tukar 2.500 poin\n- **Voucher Print 100 Lembar:** Tukar 3.500 poin\n- **Parkir Gratis 1 Bulan:** Tukar 10.000 poin\n- **Kode Promo Diskon:** Gunakan kode **NGOLABin88**";
   }
 
-  // 12. Tentang PointLab / Ngolab / WarmingUp
+  // 13. Tentang PointLab / Ngolab / WarmingUp
   if (q.includes('pointlab') || q.includes('ngolab') || q.includes('warmingup') || q.includes('aplikasi') || q.includes('tentang')) {
     return "**PointLab** adalah aplikasi membership & loyalti resmi kantin modern **WarmingUp / Ngolab** di Lantai 4 FIT Telkom University. Melalui PointLab, Anda dapat mengumpulkan poin setiap kali memesan makanan/minuman, menaikkan tingkatan tier loyalitas, dan menukarkan poin dengan berbagai voucher potongan harga!";
   }
 
   // Fallback Edukatif jika tidak ada kata kunci yang cocok
-  return "Maaf, saya belum menemukan jawaban yang tepat untuk pertanyaan tersebut.\n\nNamun, sebagai asisten resmi **PointLab (WarmingUp Lantai 4 FIT)**, Anda bisa menanyakan:\n- **Pembayaran:** Apakah ada QRIS atau Tunai?\n- **Menu & Harga:** Ayam Bakar (Rp 23k), Nasi Goreng Gila (Rp 14k), Es Teh (Rp 7k)\n- **Cara Pesan:** Kiosk Sensor Gestur atau langsung di kasir\n- **Poin & Voucher:** Cara dapat poin & daftar diskon\n- **Lokasi & Jam Buka:** Lantai 4 FIT, Senin – Jumat 08.00 – 17.00 WIB\n\nSilakan tanyakan salah satu topik di atas ya! 😊";
+  return "Maaf, saya belum menemukan jawaban yang tepat untuk pertanyaan tersebut.\n\nNamun, sebagai asisten resmi **PointLab (WarmingUp Lantai 4 FIT)**, Anda bisa menanyakan:\n- **Pembayaran:** Apakah ada QRIS atau Tunai?\n- **Menu & Harga:** Ayam Bakar (Rp 23k), Nasi Goreng Gila (Rp 14k), Es Teh (Rp 7k)\n- **Kerja Sama & Rapat:** Info tempat rapat & bonus cashback tunai (cash)\n- **Cara Pesan:** Kiosk Sensor Gestur atau langsung di kasir\n- **Poin & Voucher:** Cara dapat poin & daftar diskon\n- **Lokasi & Jam Buka:** Lantai 4 FIT, Senin – Jumat 08.00 – 17.00 WIB\n\nSilakan tanyakan salah satu topik di atas ya! 😊";
 };
 
 // Helper untuk membersihkan dan merapikan respon AI agar natural
@@ -284,6 +289,7 @@ Informasi resmi:
 5. Poin: Belanja F&B Rp 1.000 = 1 poin. Bonus daftar 100 poin. Game harian Play & Earn.
 6. Tier: Classmate (0-5k), Study Buddy (5k-15k), Campus Star (15k-35k), Hall of Fame (35k+).
 7. Redeem: Voucher Kantin 50rb (5k poin), Cashback 20% (2.5k), Print 100 Lembar (3.5k), Parkir 1 Bulan (10k).
+8. Kerja Sama & Tempat Rapat: WarmingUp Lantai 4 FIT sangat terbuka untuk kerja sama (seperti tempat rapat organisasi/komunitas, gathering, atau event). Keuntungan kerja sama: bisa dapat cashback langsung dalam bentuk uang tunai (cash)!
 Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
 
   // Auto-scroll
@@ -322,6 +328,13 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
   };
 
   const callRagAPI = async (userText, recentMessages = []) => {
+    const qLower = userText.toLowerCase();
+
+    // Prioritaskan knowledge lokal langsung jika pertanyaan jelas tentang kerja sama / tempat rapat / kemitraan
+    if (qLower.includes('kerja sama') || qLower.includes('kerjasama') || qLower.includes('rapat') || qLower.includes('meeting') || qLower.includes('gathering')) {
+      return resolveLocalPointLabKnowledge(userText);
+    }
+
     try {
       if (RAG_API_KEY) {
         const response = await fetch(RAG_API_URL, {
