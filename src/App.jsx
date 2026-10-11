@@ -47,8 +47,8 @@ const AppContent = () => {
         </div>
       </div>
       
-      {/* Floating Chat Bubble for Dashboard and Redeem */}
-      {(location.pathname === '/dashboard' || location.pathname === '/redeem') && <ChatBubble />}
+      {/* Floating Chat Bubble for Dashboard, Redeem, Promo, and Membership */}
+      {['/dashboard', '/redeem', '/promo', '/membership'].includes(location.pathname) && <ChatBubble />}
     </div>
   );
 };
