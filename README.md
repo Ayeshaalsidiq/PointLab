@@ -1,53 +1,161 @@
-# 🌟 PointLab
+# 🌟 PointLab — Smart Membership & Loyalty App
 
-![PointLab Banner](https://img.shields.io/badge/Status-Active-success.svg) ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white) 
+[![Status](https://img.shields.io/badge/Status-Active-success.svg)](https://github.com/Ayeshaalsidiq/PointLab)
+[![React](https://img.shields.io/badge/React-18-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Lucide Icons](https://img.shields.io/badge/Icons-Lucide--React-F59E0B?style=flat&logo=feather&logoColor=white)](https://lucide.dev/)
+[![Gemini AI](https://img.shields.io/badge/AI-Google_Gemini_&_RAG-4285F4?style=flat&logo=google&logoColor=white)](https://ai.google.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**PointLab** adalah sebuah *Mobile-First Web Application* bergaya premium yang dirancang sebagai platform **Sistem Keanggotaan & Loyalitas Pelanggan (Membership & Loyalty Program)**. Aplikasi ini memberikan pengalaman *user interface* (UI) yang memanjakan mata melalui implementasi *Glassmorphism*, gradien warna yang elegan, serta interaksi yang *smooth* layaknya aplikasi *mobile native* kelas atas (seperti Starbucks Rewards atau Grab).
+**PointLab** adalah aplikasi web *Mobile-First & Responsive* modern berbasis **React + Vite** yang dirancang sebagai platform **Sistem Keanggotaan, Loyalitas, dan Asisten Cerdas (Membership, Loyalty & AI Assistant)** resmi untuk kantin modern **WarmingUp / Ngolab** di **Lantai 4 FIT (Fakultas Ilmu Terapan), Telkom University**.
 
-## ✨ Fitur Utama
-
-- 📊 **Dashboard Interaktif**: Halaman beranda yang menampilkan *banner* promosi dengan *auto-sliding carousel*, kartu progres keanggotaan, aksi cepat (*Quick Actions*), serta ringkasan aktivitas pengguna.
-- 🎁 **Promo & Penukaran (Redeem)**: Katalog *voucher* terintegrasi di mana pengguna dapat menukarkan poin loyalitas mereka dengan berbagai diskon, *cashback*, hingga tiket hiburan. Dilengkapi dengan kolom penukaran *Promo Code* berdesain bersih.
-- 🎟️ **Manajemen Voucher (Promo Detail)**: Pengalaman layar penuh (fullscreen) bergaya premium saat membuka detail voucher yang diklaim. Lengkap dengan tampilan QR Code, kode unik, masa berlaku, serta syarat & ketentuan penukaran.
-- 💾 **Sistem Penyimpanan Lokal (Local Storage)**: Poin pengguna dan riwayat klaim voucher secara otomatis disimpan dengan aman di memori *browser*. Data Anda tidak akan hilang meskipun halaman di-*refresh* atau browser ditutup.
-- 💳 **Profil Premium (Membership)**: Menampilkan kartu keanggotaan *floating* (melayang) bergaya 3D yang sangat premium, memperlihatkan status *Tier* (misal: Sobat Jajan, Duta Kantin, dll), saldo poin, dan menu pengaturan ala iOS.
-- 📱 **Mobile-First Design**: Struktur kode HTML/CSS dirancang khusus agar merespons secara sempurna dan presisi pada perangkat ponsel pintar (tanpa area kosong terpotong).
-
-## 🛠️ Teknologi yang Digunakan
-
-- **React.js**: Library JavaScript untuk membangun antarmuka pengguna berbasis komponen.
-- **Vite**: *Build-tool* super cepat yang mendukung pengembangan React.
-- **Lucide-React**: Kumpulan set ikon SVG yang indah dan konsisten untuk navigasi.
-- **Vanilla CSS (Custom)**: Menggunakan CSS murni yang dioptimalkan untuk efek *glassmorphism*, gradasi warna *modern*, *flexbox*, dan animasi CSS tanpa bergantung pada *framework* eksternal seperti Tailwind (untuk kontrol gaya 100%).
-
-## 🚀 Panduan Instalasi & Menjalankan Aplikasi
-
-Ikuti langkah-langkah berikut untuk menjalankan **PointLab** di komputer lokal Anda:
-
-1. **Clone Repositori**
-   ```bash
-   git clone https://github.com/Ayeshaalsidiq/PointLab.git
-   cd PointLab
-   ```
-
-2. **Instal Dependensi**
-   Pastikan Anda telah menginstal [Node.js](https://nodejs.org/). Lalu jalankan:
-   ```bash
-   npm install
-   ```
-
-3. **Jalankan Server Pengembangan Lokal**
-   ```bash
-   npm run dev
-   ```
-
-4. **Buka di Browser**
-   Buka URL yang muncul di terminal (biasanya `http://localhost:5173`) dan nikmati pengalamannya. *Disarankan untuk melihat melalui mode inspect (Mobile View) di browser Anda untuk pengalaman terbaik.*
-
-## 🎨 Konsep Desain (UI/UX)
-
-- **Dark-to-Light Canvas**: Memanfaatkan latar belakang gelap (`#1A1B27`) di bagian *Header* untuk memancarkan aura eksklusif, lalu bertransisi mulus ke area kertas melengkung (`border-radius`) putih solid untuk menyajikan konten agar tetap bersih dan mudah dibaca.
-- **No Overlapping Clutter**: Semua elemen kartu dihitung ketat menggunakan parameter Flexbox (`flex: 1`, `flexShrink: 0`) untuk memastikan teks tidak saling tabrak di layar-layar terkecil sekalipun.
+Aplikasi ini menyajikan estetika premium bergaya *Dark Glassmorphism* yang berpadu dengan aksen warna oranye enerjik (`#FF7A03`) dan biru modern (`#3B82F6`), serta interaksi *micro-animation* halus layaknya aplikasi *mobile native* kelas dunia.
 
 ---
-*Dibuat dengan ❤️ untuk pengalaman membership yang memukau.*
+
+## 🎯 Fitur Unggulan
+
+### 🤖 1. Ngolab AI Chat Assistant (RAG & Gemini Integration)
+- **Hybrid Knowledge Engine:** Mengombinasikan arsitektur *Retrieval-Augmented Generation (RAG)* dan *Google Gemini AI* yang dilengkapi dengan *fallback resolver* lokal super akurat.
+- **Informasi Lengkap WarmingUp:** Menjawab seputar menu resmi (*Ayam Bakar, Nasi Goreng Gila, Es Teh Manis*), harga, jam operasional, lokasi Lantai 4 FIT, cara memesan via Kiosk Sensor Gestur atau kasir, pembayaran QRIS/Tunai, hingga program kerja sama sewa tempat rapat & cashback tunai.
+- **Multi-Session Management:** Pengguna dapat membuat percakapan baru, beralih antar sesi obrolan lama melalui *drawer* riwayat obrolan, menyalin respon AI, atau menghapus sesi.
+- **Konfirmasi Aman (Data Loss Prevention):** Tombol *Bersihkan Semua Riwayat* dilengkapi modal konfirmasi pop-up custom untuk mencegah riwayat terhapus secara tidak sengaja.
+
+### 💳 2. Sistem Tier Keanggotaan Dinamis (Loyalty Tiers)
+Sistem otomatis mengalkulasi dan menaikkan level keanggotaan berdasarkan saldo koin dan poin akumulasi:
+| Tier | Nama Tier | Syarat Poin | Keuntungan Utama |
+| :---: | :--- | :--- | :--- |
+| **0** | **Classmate** | 0 – 5.000 Poin | 1x Poin transaksi, Akses promo bulanan, Minuman selamat datang gratis |
+| **1** | **Study Buddy** | 5.001 – 15.000 Poin | 1.2x Poin transaksi, Upsize minuman 1x/minggu gratis, Promo 2 hari lebih awal |
+| **2** | **Campus Star** | 15.001 – 35.000 Poin | 1.5x Poin transaksi, Potongan 5% semua menu, Gratis Main Course saat Ultah |
+| **3** | **Hall of Fame** | > 35.000 Poin (MAX) | 2x Lipat poin, Diskon 30% bulanan, Bonus kejutan mingguan gratis |
+
+- Setiap tingkatan dilengkapi kartu keanggotaan 3D eksklusif, progress bar interaktif, serta panduan detail keuntungan di modal *Member Package*.
+
+### 🎁 3. Katalog Promo & Penukaran Poin (Redeem System)
+- **Tukar Poin Instan:** Tukarkan poin dengan aneka voucher diskon makanan, cashback, hingga tiket fasilitas kampus.
+- **Auto-Generate Voucher Unik:** Setiap penukaran menghasilkan kode voucher unik, tanggal kedaluwarsa 30 hari, dan otomatis mengurangi saldo poin secara real-time.
+- **Klaim Kode Promo:** Mendukung input kode promo khusus langsung (*misal: promo code dari campaign*).
+- **Tab "Promo Saya":** Menampilkan seluruh voucher yang telah diklaim lengkap dengan QR Code siap-scan untuk digunakan di kasir.
+
+### 👤 4. Profil & Manajemen Akun Terintegrasi
+- **Identitas Digital:** Menampilkan kartu QR Code member untuk mempermudah identifikasi saat transaksi di Kiosk Gestur atau kasir.
+- **Edit Profil Interaktif:** Kemudahan mengganti Nama Lengkap, Nomor Telepon, serta upload Foto Profil (Avatar).
+- **Ganti Password:** Dilengkapi validasi keamanan (minimal 6 karakter & konfirmasi kecocokan) serta tombol toggle lihat/sembunyikan password (*Eye / EyeOff*).
+- **Pusat Bantuan Resmi:** Tombol pintas bantuan langsung menuju WhatsApp Support resmi dan Instagram `@ngolabcafe`.
+
+### 🔐 5. Autentikasi Pengguna
+- Halaman Login & Registrasi terpadu dengan efek visual latar *ambient animated orbs*.
+- Dukungan login menggunakan NIM atau Email kampus, pengingat *Keep me logged in*, serta validasi password.
+
+---
+
+## 🛠️ Tech Stack & Arsitektur
+
+| Komponen | Teknologi |
+| :--- | :--- |
+| **Frontend Core** | [React 18](https://reactjs.org/) + [Vite](https://vitejs.dev/) |
+| **Bahasa** | JavaScript (ES6+) / JSX |
+| **Styling & Desain** | Vanilla CSS Modern (Flexbox/Grid, Glassmorphism, Micro-animations) |
+| **Iconography** | [Lucide React](https://lucide.dev/) |
+| **State Management** | React Context API (`UserContext`) + LocalStorage Persistence |
+| **AI Integration** | Google Gemini API + Custom RAG Knowledge Base |
+| **Database Ref** | MySQL / MariaDB (`gesture_eats.sql`) |
+
+---
+
+## 📁 Struktur Direktori Proyek
+
+```plaintext
+PointLab/
+├── public/
+├── src/
+│   ├── assets/              # Aset grafis (Logo Ngolab, Kartu Tier 1-4 3D)
+│   ├── components/          # Komponen UI bersama (Navigation, Sidebar, QRModal)
+│   ├── context/             # Global State (UserContext untuk poin, tier, voucher)
+│   ├── pages/               # Halaman utama aplikasi:
+│   │   ├── AIChat.jsx       # Asisten AI, RAG resolver, chat multi-turn & riwayat
+│   │   ├── Auth.jsx         # Halaman Login & Registrasi mahasiswa
+│   │   ├── Dashboard.jsx    # Beranda, tier progress, saldo poin & carousel promo
+│   │   ├── History.jsx      # Riwayat mutasi poin & transaksi pesanan
+│   │   ├── Membership.jsx   # Pengaturan profil, ganti password, & pusat bantuan
+│   │   ├── Promo.jsx        # Halaman koleksi "Promo Saya" (My Vouchers)
+│   │   ├── PromoDetail.jsx  # Rincian voucher & QR code penukaran
+│   │   ├── Redeem.jsx       # Katalog penukaran poin dengan voucher
+│   │   └── TierDetails.jsx  # Panduan perbandingan benefit tier keanggotaan
+│   ├── App.jsx              # Routing & Shell Layout
+│   ├── index.css            # Desain sistem global, tema warna & keyframe animasi
+│   └── main.jsx             # Entry point React
+├── gesture_eats (2).sql     # Skema database MySQL backend
+├── package.json
+└── README.md
+```
+
+---
+
+## 🚀 Panduan Memulai (Quick Start)
+
+### 1. Prasyarat
+Pastikan komputer Anda telah terinstal:
+- [Node.js](https://nodejs.org/) (versi 16.x atau lebih tinggi)
+- Git
+
+### 2. Kloning Repositori
+```bash
+git clone https://github.com/Ayeshaalsidiq/PointLab.git
+cd PointLab
+```
+
+### 3. Instal Dependensi
+```bash
+npm install
+```
+
+### 4. Konfigurasi Environment (Opsional untuk AI)
+Buat file `.env` di root direktori jika ingin mengaktifkan API Gemini & RAG kustom:
+```env
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+VITE_RAG_API_URL=your_rag_api_url_here
+VITE_RAG_API_KEY=your_rag_api_key_here
+VITE_RAG_KB_ID=your_kb_id_here
+```
+
+### 5. Jalankan Aplikasi
+```bash
+npm run dev
+```
+Buka browser di `http://localhost:5173`. *Untuk tampilan optimal, gunakan mode responsif (Mobile View) di browser inspect element.*
+
+---
+
+## 🔌 Spesifikasi Kebutuhan REST API Backend
+
+Untuk rekan pengembang backend, berikut adalah ringkasan modul endpoint yang terintegrasi dengan PointLab:
+
+| Modul | Method | Endpoint | Fungsi |
+| :--- | :---: | :--- | :--- |
+| **Auth** | `POST` | `/api/auth/register` | Pendaftaran akun baru |
+| | `POST` | `/api/auth/login` | Login user & generate token JWT |
+| **User & Profile** | `GET` | `/api/users/profile` | Ambil profil user & saldo koin |
+| | `PUT` | `/api/users/profile` | Update nama & nomor telepon |
+| | `PUT` | `/api/users/password` | Ganti password akun |
+| | `POST` | `/api/users/avatar` | Upload foto profil baru |
+| **Poin & Mutasi** | `GET` | `/api/coins/balance` | Saldo poin & akumulasi tier |
+| | `GET` | `/api/coins/history` | Riwayat transaksi poin (`earn` / `redeem`) |
+| **Promo & Voucher** | `GET` | `/api/promos` | Katalog voucher yang tersedia |
+| | `POST` | `/api/promos/redeem` | Menukar koin dengan voucher |
+| | `POST` | `/api/promos/claim-code` | Klaim kupon promo kode |
+| | `GET` | `/api/vouchers/my-vouchers` | Daftar voucher milik user |
+| **Menu & Order** | `GET` | `/api/menus` | Katalog menu makanan WarmingUp |
+| | `GET` | `/api/orders/my-orders` | Riwayat pesanan makanan user |
+
+---
+
+## 📄 Lisensi
+Proyek ini dilisensikan di bawah lisensi **MIT**. Bebas dikembangkan dan dimodifikasi untuk keperluan pembelajaran dan pengembangan layanan WarmingUp / Ngolab Telkom University.
+
+---
+
+<p align="center">
+  Dibuat dengan ❤️ untuk kemudahan dan kepuasan komunitas <b>WarmingUp / Ngolab FIT Telkom University</b>.
+</p>
