@@ -118,17 +118,21 @@ const sanitizeAndFormatResponse = (text, userQuery = '') => {
   // 1. Hapus tanda sitasi angka dokumen seperti [1], [2], [1][2]
   let cleaned = text.replace(/\[\d+\]/g, '');
 
-  // 2. Bersihkan tanda pagar heading markdown (##, ###) di awal baris
+  // 2. Hapus catatan internal / developer notes dari dokumen RAG
+  cleaned = cleaned.replace(/^skipped:.*$/gmi, '');
+  cleaned = cleaned.replace(/^note:.*$/gmi, '');
+
+  // 3. Bersihkan tanda pagar heading markdown (##, ###) di awal baris
   cleaned = cleaned.replace(/^#+\s*/gm, '');
 
-  // 3. Rapikan spasi berlebih sebelum tanda baca akibat hilangnya [1]
+  // 4. Rapikan spasi berlebih sebelum tanda baca akibat hilangnya [1]
   cleaned = cleaned.replace(/\s+([.,!?])/g, '$1');
 
-  // 4. Ubah baris tabel markdown jika ada menjadi format baris rapi
+  // 5. Ubah baris tabel markdown jika ada menjadi format baris rapi
   cleaned = cleaned.replace(/^\|[-:\s|]+\|$/gm, '');
   cleaned = cleaned.replace(/^\|\s*(.*?)\s*\|$/gm, '- $1');
 
-  // 5. Rapikan baris kosong yang berlebihan
+  // 6. Rapikan baris kosong yang berlebihan
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
 
   return cleaned.trim();
