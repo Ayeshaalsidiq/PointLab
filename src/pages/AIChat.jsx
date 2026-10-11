@@ -563,13 +563,13 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
         </div>
       </header>
 
-      {/* Slide-Over Drawer Riwayat Sesi (PointLab Glassmorphism Modern) */}
+      {/* Slide-Over Drawer Riwayat Sesi (Clean Light Modern Theme) */}
       {showHistoryDrawer && (
         <div 
           style={{
             position: 'fixed', inset: 0, zIndex: 100,
-            background: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(8px)',
+            background: 'rgba(15, 23, 42, 0.35)',
+            backdropFilter: 'blur(6px)',
             display: 'flex', justifyContent: 'flex-end',
             animation: 'fade-in 0.2s ease-out'
           }}
@@ -578,54 +578,43 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
           <div 
             style={{
               width: '100%', maxWidth: '380px', height: '100%',
-              background: 'linear-gradient(180deg, #1A1B27 0%, #111420 100%)',
-              borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
+              background: '#FFFFFF',
+              borderLeft: '1px solid #E2E8F0',
               display: 'flex', flexDirection: 'column',
-              boxShadow: '-15px 0 40px rgba(0, 0, 0, 0.5)',
+              boxShadow: '-10px 0 35px rgba(0, 0, 0, 0.08)',
               animation: 'slide-left 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-              position: 'relative', overflow: 'hidden'
+              position: 'relative'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Top Glowing Ambient Accents */}
-            <div style={{ position: 'absolute', top: '-60px', right: '-40px', width: '180px', height: '180px', background: 'radial-gradient(circle, rgba(255, 122, 3, 0.25) 0%, transparent 70%)', filter: 'blur(35px)', pointerEvents: 'none' }}></div>
-            <div style={{ position: 'absolute', bottom: '15%', left: '-50px', width: '160px', height: '160px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%)', filter: 'blur(35px)', pointerEvents: 'none' }}></div>
+            {/* Top Brand Accent Stripe */}
+            <div style={{ height: '3px', background: 'linear-gradient(90deg, #FF7A03 0%, #FFA34D 100%)', width: '100%' }}></div>
 
-            {/* Top Brand Stripe */}
-            <div style={{ height: '3px', background: 'linear-gradient(90deg, #FF7A03 0%, #FFA34D 50%, #3B82F6 100%)', width: '100%', zIndex: 3 }}></div>
-
-            {/* Drawer Header */}
+            {/* Drawer Header Clean */}
             <div style={{
               padding: '1.25rem 1.25rem 1rem 1.25rem',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              position: 'relative', zIndex: 2
+              borderBottom: '1px solid #F1F5F9',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{ 
                   width: '38px', height: '38px', borderRadius: '12px', 
-                  background: 'linear-gradient(135deg, rgba(255, 122, 3, 0.2) 0%, rgba(255, 122, 3, 0.05) 100%)', 
-                  border: '1px solid rgba(255, 122, 3, 0.35)',
+                  background: '#FFF7ED', border: '1px solid #FFEDD5',
                   display: 'flex', justifyContent: 'center', alignItems: 'center',
-                  boxShadow: '0 4px 12px rgba(255, 122, 3, 0.15)'
+                  boxShadow: '0 2px 8px rgba(255, 122, 3, 0.08)'
                 }}>
                   <History size={18} color="#FF7A03" />
                 </div>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.3px', fontFamily: 'Poppins, sans-serif' }}>
-                      Riwayat Obrolan
-                    </h3>
-                    <span style={{ 
-                      fontSize: '0.65rem', background: 'rgba(255, 122, 3, 0.15)', 
-                      color: '#FFA34D', border: '1px solid rgba(255, 122, 3, 0.3)', 
-                      borderRadius: '10px', padding: '1px 6px', fontWeight: 600 
-                    }}>
-                      {sessions.length} Sesi
-                    </span>
-                  </div>
-                  <span style={{ fontSize: '0.72rem', color: '#94A3B8', marginTop: '2px', display: 'block' }}>
-                    Tersimpan otomatis di browser akun Anda
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#1E293B', letterSpacing: '-0.3px', fontFamily: 'Poppins, sans-serif' }}>
+                    Riwayat Obrolan
+                  </h3>
+                  <span style={{ 
+                    fontSize: '0.68rem', background: '#FFF7ED', 
+                    color: '#FF7A03', border: '1px solid #FFEDD5', 
+                    borderRadius: '12px', padding: '2px 8px', fontWeight: 700 
+                  }}>
+                    {sessions.length} Sesi
                   </span>
                 </div>
               </div>
@@ -634,12 +623,12 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
                 onClick={() => setShowHistoryDrawer(false)}
                 style={{ 
                   width: '32px', height: '32px', borderRadius: '50%',
-                  background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.08)', 
-                  color: '#94A3B8', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  background: '#F8FAFC', border: '1px solid #E2E8F0', 
+                  color: '#64748B', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center',
                   transition: 'all 0.2s'
                 }}
-                onMouseOver={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.color = '#FFFFFF'; }}
-                onMouseOut={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)'; e.currentTarget.style.color = '#94A3B8'; }}
+                onMouseOver={e => { e.currentTarget.style.background = '#F1F5F9'; e.currentTarget.style.color = '#1E293B'; }}
+                onMouseOut={e => { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.color = '#64748B'; }}
                 title="Tutup"
               >
                 <X size={16} />
@@ -647,7 +636,7 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
             </div>
 
             {/* CTA Button: Mulai Percakapan Baru */}
-            <div style={{ padding: '1rem 1.25rem 0.75rem 1.25rem', position: 'relative', zIndex: 2 }}>
+            <div style={{ padding: '1rem 1.25rem 0.5rem 1.25rem' }}>
               <button
                 onClick={handleNewChat}
                 style={{
@@ -656,11 +645,11 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
                   border: 'none', borderRadius: '14px',
                   color: 'white', fontWeight: 700, fontSize: '0.875rem',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                  cursor: 'pointer', boxShadow: '0 8px 20px rgba(255, 122, 3, 0.3)',
+                  cursor: 'pointer', boxShadow: '0 4px 15px rgba(255, 122, 3, 0.25)',
                   transition: 'all 0.2s', letterSpacing: '0.2px'
                 }}
-                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(255, 122, 3, 0.4)'; }}
-                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(255, 122, 3, 0.3)'; }}
+                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 122, 3, 0.35)'; }}
+                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 122, 3, 0.25)'; }}
               >
                 <Plus size={18} strokeWidth={2.5} />
                 <span>Mulai Percakapan Baru</span>
@@ -668,24 +657,21 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
             </div>
 
             {/* Section Title */}
-            <div style={{ padding: '0.5rem 1.25rem 0.25rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 2 }}>
-              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748B', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+            <div style={{ padding: '0.5rem 1.25rem 0.35rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#94A3B8', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
                 Daftar Percakapan
-              </span>
-              <span style={{ fontSize: '0.68rem', color: '#64748B' }}>
-                Klik untuk membuka
               </span>
             </div>
 
-            {/* List Riwayat Sesi */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', zIndex: 2 }}>
+            {/* List Riwayat Sesi (Light Clean Cards) */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
               {sessions.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#64748B' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 1rem' }}>
-                    <MessageSquare size={24} color="#64748B" />
+                <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#94A3B8' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 1rem' }}>
+                    <MessageSquare size={24} color="#94A3B8" />
                   </div>
-                  <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', fontWeight: 600, color: '#94A3B8' }}>Belum ada obrolan</p>
-                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748B' }}>Mulai pertanyaan pertama Anda ke Ngolab AI</p>
+                  <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', fontWeight: 600, color: '#64748B' }}>Belum ada obrolan</p>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#94A3B8' }}>Mulai pertanyaan pertama Anda ke Ngolab AI</p>
                 </div>
               ) : (
                 sessions.map((sess) => {
@@ -700,28 +686,29 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
                       style={{
                         padding: '0.9rem 1rem',
                         borderRadius: '14px',
-                        border: isActive ? '1px solid rgba(255, 122, 3, 0.45)' : '1px solid rgba(255, 255, 255, 0.06)',
+                        border: isActive ? '1.5px solid #FF7A03' : '1px solid #E2E8F0',
                         background: isActive 
-                          ? 'linear-gradient(135deg, rgba(255, 122, 3, 0.12) 0%, rgba(255, 122, 3, 0.04) 100%)' 
-                          : 'rgba(30, 41, 59, 0.45)',
-                        backdropFilter: 'blur(10px)',
+                          ? 'linear-gradient(135deg, #FFF9F2 0%, #FFFFFF 100%)' 
+                          : '#FFFFFF',
                         cursor: 'pointer',
                         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         position: 'relative',
-                        boxShadow: isActive ? '0 4px 15px rgba(255, 122, 3, 0.1)' : 'none'
+                        boxShadow: isActive ? '0 4px 15px rgba(255, 122, 3, 0.08)' : '0 2px 6px rgba(0, 0, 0, 0.02)'
                       }}
                       onMouseOver={(e) => {
                         if (!isActive) {
-                          e.currentTarget.style.background = 'rgba(30, 41, 59, 0.75)';
-                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                          e.currentTarget.style.background = '#F8FAFC';
+                          e.currentTarget.style.borderColor = '#CBD5E1';
                           e.currentTarget.style.transform = 'translateY(-1px)';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
                         }
                       }}
                       onMouseOut={(e) => {
                         if (!isActive) {
-                          e.currentTarget.style.background = 'rgba(30, 41, 59, 0.45)';
-                          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.06)';
+                          e.currentTarget.style.background = '#FFFFFF';
+                          e.currentTarget.style.borderColor = '#E2E8F0';
                           e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.02)';
                         }
                       }}
                     >
@@ -729,26 +716,27 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
                       {isActive && (
                         <div style={{
                           position: 'absolute', left: '0', top: '12px', bottom: '12px',
-                          width: '3.5px', background: '#FF7A03', borderRadius: '0 4px 4px 0'
+                          width: '4px', background: '#FF7A03', borderRadius: '0 4px 4px 0'
                         }}></div>
                       )}
 
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.65rem' }}>
                         <div style={{ flex: 1, minWidth: 0, paddingLeft: isActive ? '4px' : '0' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.3rem' }}>
-                            <MessageSquare size={14} color={isActive ? '#FF7A03' : '#94A3B8'} style={{ flexShrink: 0 }} />
+                            <MessageSquare size={14} color={isActive ? '#FF7A03' : '#64748B'} style={{ flexShrink: 0 }} />
                             <h4 style={{ 
-                              margin: 0, fontSize: '0.875rem', fontWeight: 600, 
-                              color: isActive ? '#FFA34D' : '#F1F5F9',
+                              margin: 0, fontSize: '0.875rem', fontWeight: 700, 
+                              color: isActive ? '#FF7A03' : '#1E293B',
                               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' 
                             }}>
                               {sess.title}
                             </h4>
                             {isActive && (
                               <span style={{ 
-                                marginLeft: 'auto', background: '#FF7A03', color: 'white', 
-                                fontSize: '0.62rem', fontWeight: 700, padding: '1px 6px', 
-                                borderRadius: '8px', letterSpacing: '0.2px' 
+                                marginLeft: 'auto', background: '#FFF7ED', color: '#FF7A03', 
+                                border: '1px solid #FFEDD5',
+                                fontSize: '0.62rem', fontWeight: 700, padding: '2px 7px', 
+                                borderRadius: '6px', letterSpacing: '0.2px' 
                               }}>
                                 Aktif
                               </span>
@@ -756,16 +744,16 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
                           </div>
                           
                           <p style={{ 
-                            margin: '0 0 0.5rem 0', fontSize: '0.76rem', color: '#94A3B8',
+                            margin: '0 0 0.5rem 0', fontSize: '0.76rem', color: '#64748B',
                             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                             lineHeight: 1.4
                           }}>
                             {lastMsg}
                           </p>
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.7rem', color: '#64748B' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.7rem', color: '#94A3B8' }}>
                             <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                              <Clock size={11} color="#64748B" /> {sess.createdAt}
+                              <Clock size={11} color="#94A3B8" /> {sess.createdAt}
                             </span>
                             <span>•</span>
                             <span>{msgCount} pesan</span>
@@ -776,20 +764,20 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
                         <button
                           onClick={(e) => handleDeleteSession(e, sess.id)}
                           style={{
-                            background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.06)', 
-                            color: '#64748B', cursor: 'pointer', width: '28px', height: '28px', 
+                            background: '#F8FAFC', border: '1px solid #E2E8F0', 
+                            color: '#94A3B8', cursor: 'pointer', width: '28px', height: '28px', 
                             borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center',
                             transition: 'all 0.2s', flexShrink: 0
                           }}
                           onMouseOver={(e) => {
                             e.currentTarget.style.color = '#EF4444';
-                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
-                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                            e.currentTarget.style.background = '#FEE2E2';
+                            e.currentTarget.style.borderColor = '#FECACA';
                           }}
                           onMouseOut={(e) => {
-                            e.currentTarget.style.color = '#64748B';
-                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
-                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.06)';
+                            e.currentTarget.style.color = '#94A3B8';
+                            e.currentTarget.style.background = '#F8FAFC';
+                            e.currentTarget.style.borderColor = '#E2E8F0';
                           }}
                           title="Hapus sesi ini"
                         >
@@ -802,39 +790,37 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
               )}
             </div>
 
-            {/* Drawer Footer: Bersihkan Semua Riwayat */}
+            {/* Drawer Footer Clean (Tanpa Tulisan 'Tersimpan di Browser') */}
             {sessions.length > 0 && (
               <div style={{ 
                 padding: '0.85rem 1.25rem', 
-                borderTop: '1px solid rgba(255, 255, 255, 0.06)', 
-                background: 'rgba(15, 23, 42, 0.5)',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                zIndex: 2
+                borderTop: '1px solid #F1F5F9', 
+                background: '#F8FAFC',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: '#94A3B8' }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 6px #10B981' }}></span>
-                  <span>Tersimpan di Browser</span>
-                </div>
-
                 <button
                   onClick={handleClearAllHistory}
                   style={{
-                    background: 'transparent', border: 'none',
-                    color: '#94A3B8', fontSize: '0.75rem', fontWeight: 600,
-                    display: 'flex', alignItems: 'center', gap: '0.35rem',
-                    cursor: 'pointer', transition: 'all 0.2s', padding: '4px 8px', borderRadius: '6px'
+                    width: '100%', padding: '0.65rem',
+                    background: 'transparent', border: '1px solid #E2E8F0',
+                    borderRadius: '10px', color: '#64748B',
+                    fontSize: '0.78rem', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem',
+                    cursor: 'pointer', transition: 'all 0.2s'
                   }}
                   onMouseOver={(e) => { 
                     e.currentTarget.style.color = '#EF4444'; 
-                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; 
+                    e.currentTarget.style.background = '#FEE2E2'; 
+                    e.currentTarget.style.borderColor = '#FECACA';
                   }}
                   onMouseOut={(e) => { 
-                    e.currentTarget.style.color = '#94A3B8'; 
+                    e.currentTarget.style.color = '#64748B'; 
                     e.currentTarget.style.background = 'transparent'; 
+                    e.currentTarget.style.borderColor = '#E2E8F0';
                   }}
                 >
-                  <Trash2 size={13} />
-                  <span>Bersihkan Semua</span>
+                  <Trash2 size={14} />
+                  <span>Bersihkan Semua Riwayat</span>
                 </button>
               </div>
             )}
