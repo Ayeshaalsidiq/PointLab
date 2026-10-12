@@ -9,7 +9,9 @@ const PromoDetail = () => {
   const { redeemedVouchers } = useUser();
   const [copied, setCopied] = useState(false);
 
-  const voucher = redeemedVouchers.find(v => v.redeemId === id || v.code === id);
+  const voucher = redeemedVouchers.find(
+    v => String(v.redeemId) === String(id) || String(v.code) === String(id) || String(v.id) === String(id)
+  );
 
   if (!voucher) {
     return (
