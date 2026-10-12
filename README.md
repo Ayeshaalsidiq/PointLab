@@ -50,44 +50,45 @@ Sistem otomatis mengalkulasi dan menaikkan level keanggotaan berdasarkan saldo k
 
 ---
 
-## 🛠️ Tech Stack & Arsitektur
+## 🛠️ Tech Stack & Arsitektur MVC
 
-| Komponen | Teknologi |
+PointLab mengadopsi arsitektur **Model-View-Controller (MVC)** berbasis server Node.js / Express untuk deployment yang stabil, reliabel, dan kompatibel dengan berbagai platform cloud:
+
+| Lapisan MVC | Deskripsi & Komponen |
 | :--- | :--- |
-| **Frontend Core** | [React 18](https://reactjs.org/) + [Vite](https://vitejs.dev/) |
-| **Bahasa** | JavaScript (ES6+) / JSX |
-| **Styling & Desain** | Vanilla CSS Modern (Flexbox/Grid, Glassmorphism, Micro-animations) |
-| **Iconography** | [Lucide React](https://lucide.dev/) |
-| **State Management** | React Context API (`UserContext`) + LocalStorage Persistence |
-| **AI Integration** | Google Gemini API + Custom RAG Knowledge Base |
-| **Database Ref** | MySQL / MariaDB (`gesture_eats.sql`) |
+| **Model** (`models/`) | `userModel.js`, `coinModel.js`, `promoModel.js`, `chatModel.js` — Mengelola entitas data, logika saldo poin, tier status, kalkulasi reward, dan knowledge base RAG. |
+| **View** (`views/` & `src/`) | Komponen visual antarmuka pengguna bergaya *Dark Glassmorphism*, animasi 3D kartu tier, ikon Lucide, dan template view per rute. |
+| **Controller** (`controllers/`) | `authController.js`, `dashboardController.js`, `promoController.js`, `membershipController.js`, `chatController.js` — Memproses request HTTP, validasi, dan menghubungkan data Model ke View. |
+| **Routing** (`routes/`) | `webRoutes.js` (navigasi multi-page) & `apiRoutes.js` (RESTful API terstruktur). |
+| **Server Engine** (`server.js`) | Express.js Web Service sebagai entry point utama aplikasi. |
 
 ---
 
-## 📁 Struktur Direktori Proyek
+## 📁 Struktur Direktori Proyek (Arsitektur MVC)
 
 ```plaintext
 PointLab/
-├── public/
-├── src/
-│   ├── assets/              # Aset grafis (Logo Ngolab, Kartu Tier 1-4 3D)
-│   ├── components/          # Komponen UI bersama (Navigation, Sidebar, QRModal)
-│   ├── context/             # Global State (UserContext untuk poin, tier, voucher)
-│   ├── pages/               # Halaman utama aplikasi:
-│   │   ├── AIChat.jsx       # Asisten AI, RAG resolver, chat multi-turn & riwayat
-│   │   ├── Auth.jsx         # Halaman Login & Registrasi mahasiswa
-│   │   ├── Dashboard.jsx    # Beranda, tier progress, saldo poin & carousel promo
-│   │   ├── History.jsx      # Riwayat mutasi poin & transaksi pesanan
-│   │   ├── Membership.jsx   # Pengaturan profil, ganti password, & pusat bantuan
-│   │   ├── Promo.jsx        # Halaman koleksi "Promo Saya" (My Vouchers)
-│   │   ├── PromoDetail.jsx  # Rincian voucher & QR code penukaran
-│   │   ├── Redeem.jsx       # Katalog penukaran poin dengan voucher
-│   │   └── TierDetails.jsx  # Panduan perbandingan benefit tier keanggotaan
-│   ├── App.jsx              # Routing & Shell Layout
-│   ├── index.css            # Desain sistem global, tema warna & keyframe animasi
-│   └── main.jsx             # Entry point React
+├── controllers/             # [C] Lapisan Controller (Auth, Dashboard, Promo, Chat, Member)
+│   ├── authController.js
+│   ├── dashboardController.js
+│   ├── promoController.js
+│   ├── membershipController.js
+│   └── chatController.js
+├── models/                  # [M] Lapisan Model (User, Poin/Koin, Promo/Voucher, Knowledge Base)
+│   ├── userModel.js
+│   ├── coinModel.js
+│   ├── promoModel.js
+│   └── chatModel.js
+├── views/                   # [V] Lapisan View (Template View Rendered)
+│   └── index.html
+├── routes/                  # [ROUTER] Pemetaan URL ke Controller
+│   ├── webRoutes.js         # Rute halaman (/dashboard, /auth, /promo, /chat, dll)
+│   └── apiRoutes.js         # Endpoint RESTful API (/api/*)
+├── public/                  # File statis publik
+├── src/                     # Core komponen UI, styling CSS & interaksi frontend
+├── server.js                # Server Entry Point Utama (Express MVC)
 ├── gesture_eats (2).sql     # Skema database MySQL backend
-├── package.json
+├── package.json             # Startup script "start": "node server.js" & "main": "server.js"
 └── README.md
 ```
 
