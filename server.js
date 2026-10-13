@@ -58,19 +58,37 @@ app.use((req, res) => {
     });
   }
 
-  const publicHtmlPath = path.join(__dirname, 'public', 'index.html');
-  const distHtmlPath = path.join(__dirname, 'dist', 'index.html');
-  const viewPath = path.join(__dirname, 'views', 'index.html');
-  
-  if (fs.existsSync(publicHtmlPath)) {
-    return res.sendFile(publicHtmlPath);
-  } else if (fs.existsSync(distHtmlPath)) {
-    return res.sendFile(distHtmlPath);
-  } else if (fs.existsSync(viewPath)) {
-    return res.sendFile(viewPath);
+  // Untuk semua route lain, sajikan SPA HTML menggunakan fs.readFileSync (anti-500)
+  const candidatePaths = [
+    path.join(__dirname, 'public', 'index.html'),
+    path.join(__dirname, 'dist', 'index.html'),
+    path.join(__dirname, 'views', 'index.html')
+  ];
+
+  for (const p of candidatePaths) {
+    try {
+      if (fs.existsSync(p)) {
+        const html = fs.readFileSync(p, 'utf-8');
+        return res.type('html').send(html);
+      }
+    } catch (readErr) {
+      console.warn(`⚠️ [Fallback] Gagal membaca ${p}:`, readErr.message);
+    }
   }
-  
-  res.status(200).send('<!doctype html><html><head><meta charset="utf-8"><title>PointLab</title></head><body><div id="root">PointLab</div></body></html>');
+
+  res.type('html').status(200).send('<!doctype html><html><head><meta charset="utf-8"><title>PointLab</title></head><body><div id="root">PointLab</div></body></html>');
+});
+
+// 4. Global Error Handler (mencegah crash 500 yang tidak tertangani)
+app.use((err, req, res, _next) => {
+  console.error('❌ [Global Error Handler]', err.message || err);
+  if (req.path.startsWith('/api')) {
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: err.message || 'Terjadi kesalahan pada server.'
+    });
+  }
+  res.type('html').status(200).send('<!doctype html><html><head><meta charset="utf-8"><title>PointLab</title></head><body><div id="root">PointLab</div></body></html>');
 });
 
 // Jalankan Server
@@ -84,3 +102,4 @@ app.listen(PORT, () => {
 });
 
 export default app;
+
