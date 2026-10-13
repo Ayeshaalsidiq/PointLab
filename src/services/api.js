@@ -193,6 +193,47 @@ export const api = {
   },
 
   // ==========================================
+  // LOYALTY MEMBER ENDPOINTS (/api/members/{id}/...)
+  // ==========================================
+  async getMember(id = 'me') {
+    return await apiRequest(`/api/members/${id}`);
+  },
+
+  async getMemberTier(id = 'me') {
+    return await apiRequest(`/api/members/${id}/tier`);
+  },
+
+  async getMemberPoints(id = 'me') {
+    return await apiRequest(`/api/members/${id}/points`);
+  },
+
+  async getMemberHistory(id = 'me') {
+    return await apiRequest(`/api/members/${id}/history`);
+  },
+
+  async getMemberVouchers(id = 'me') {
+    return await apiRequest(`/api/members/${id}/vouchers`);
+  },
+
+  // ==========================================
+  // REWARDS LOYALTY (/api/rewards)
+  // ==========================================
+  async getRewards() {
+    return await apiRequest('/api/rewards');
+  },
+
+  async getRewardDetail(id) {
+    return await apiRequest(`/api/rewards/${id}`);
+  },
+
+  async redeemReward(rewardId) {
+    return await apiRequest('/api/rewards/redeem', {
+      method: 'POST',
+      body: JSON.stringify({ reward_id: rewardId, promo_id: rewardId }),
+    });
+  },
+
+  // ==========================================
   // MENU KANTIN & PESANAN (WARMINGUP)
   // ==========================================
   async getMenus() {
@@ -205,3 +246,4 @@ export const api = {
 };
 
 export default api;
+

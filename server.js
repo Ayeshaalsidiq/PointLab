@@ -13,6 +13,7 @@ import { fileURLToPath } from 'url';
 
 import webRoutes from './routes/webRoutes.js';
 import apiRoutes from './routes/apiRoutes.js';
+import { initDb } from './config/db.js';
 
 dotenv.config();
 
@@ -38,14 +39,25 @@ if (fs.existsSync(publicPath)) {
   app.use(express.static(publicPath));
 }
 
+// Inisialisasi koneksi Database MySQL
+initDb();
+
 // 1. Lapisan API MVC (/api/*)
 app.use('/api', apiRoutes);
 
 // 2. Lapisan Web Routes MVC (/dashboard, /auth, /promo, /membership, /chat, dll.)
 app.use('/', webRoutes);
 
-// 3. Fallback Route (menjamin seluruh routing server-side terjaga tanpa 404)
+// 3. Fallback Route (menjamin routing SPA klien dan mencegah kebocoran HTML pada /api)
 app.use((req, res) => {
+  // Jika path diawali dengan /api, pastikan selalu mengembalikan JSON
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({
+      error: 'Not Found',
+      message: `Endpoint API ${req.method} ${req.originalUrl} tidak ditemukan.`
+    });
+  }
+
   const viewPath = path.join(__dirname, 'views', 'index.html');
   const distHtmlPath = path.join(__dirname, 'dist', 'index.html');
   
@@ -64,6 +76,7 @@ app.listen(PORT, () => {
   console.log(`🚀 PointLab MVC Server berjalan di port ${PORT}`);
   console.log(`🌐 Akses: http://localhost:${PORT}`);
   console.log(`📂 Arsitektur: Model - View - Controller (Server-Side)`);
+  console.log(`💾 Database: MySQL driver (mysql2) + Multi-User Model`);
   console.log(`====================================================`);
 });
 

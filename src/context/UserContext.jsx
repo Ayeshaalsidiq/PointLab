@@ -170,6 +170,15 @@ export const UserProvider = ({ children }) => {
       }
     } catch (err) {
       console.warn('Gagal memperbarui profil pengguna dari backend:', err.message);
+      if (err.status === 401) {
+        api.logout();
+        setToken(null);
+        setUser(null);
+        setPoints(0);
+        localStorage.removeItem('pointlab_points');
+        localStorage.removeItem('pointlab_vouchers');
+        localStorage.removeItem('pointlab_user');
+      }
     }
     return null;
   }, []);

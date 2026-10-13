@@ -1,6 +1,6 @@
 /**
  * PromoController - PointLab MVC Controller Layer
- * Menangani tampilan katalog promo, penukaran poin (redeem), klaim kode promo, dan voucher pengguna.
+ * Menangani katalog promo/reward, penukaran poin (redeem), klaim kode promo, dan voucher per pengguna.
  */
 
 import path from 'path';
@@ -19,58 +19,86 @@ export const promoController = {
     res.sendFile(VIEW_PATH);
   },
 
-  // API Daftar Promo Tersedia
+  // API Daftar Promo / Rewards Tersedia
   async getPromos(req, res) {
     try {
-      const promos = promoModel.getAllPromos();
-      return res.status(200).json({ promos });
+      const promos = await promoModel.getAllPromos();
+      return res.status(200).json({
+        promos,
+        rewards: promos // alias untuk endpoint rewards
+      });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
   },
 
-  // API Detail Promo
+  // API Detail Promo / Reward
   async getPromoDetail(req, res) {
     try {
-      const promo = promoModel.getPromoById(req.params.id);
-      if (!promo) return res.status(404).json({ error: 'Promo tidak ditemukan.' });
-      return res.status(200).json({ promo });
+      const promoId = req.params.id || req.params.promoId;
+      const promo = await promoModel.getPromoById(promoId);
+      if (!promo) {
+        return res.status(404).json({ error: 'Promo / reward tidak ditemukan.' });
+      }
+      return res.status(200).json({
+        promo,
+        reward: promo
+      });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
   },
 
-  // API Tukar Poin dengan Promo
+  // API Tukar Poin dengan Promo / Reward (Redeem)
   async redeem(req, res) {
     try {
-      const { promo_id } = req.body;
-      const promo = promoModel.getPromoById(promo_id);
-      if (!promo) return res.status(404).json({ error: 'Promo tidak valid.' });
-
-      const user = userModel.findById(1);
-      if (user.poin < promo.pointsRequired) {
-        return res.status(400).json({ error: 'Saldo poin Anda tidak mencukupi untuk menukar voucher ini.' });
+      const promoId = req.body.promo_id || req.body.reward_id || req.body.promoId || req.params.id;
+      if (!promoId) {
+        return res.status(400).json({ error: 'ID promo / reward wajib disertakan.' });
       }
 
-      // Potong poin
-      userModel.updatePoints(1, -promo.pointsRequired);
+      const targetUserId = req.userId || req.body.user_id || 1;
+      const promo = await promoModel.getPromoById(promoId);
+      if (!promo) {
+        return res.status(404).json({ error: 'Promo / reward tidak valid.' });
+      }
 
-      // Catat riwayat
-      coinModel.addHistory({
+      const user = await userModel.findById(targetUserId);
+      if (!user) {
+        return res.status(404).json({ error: 'Pengguna tidak ditemukan.' });
+      }
+
+      const cost = promo.pointsRequired || promo.coin_cost || 0;
+      if (user.poin < cost) {
+        return res.status(400).json({
+          error: `Saldo poin Anda (${user.poin}) tidak mencukupi untuk menukar voucher ini (${cost} poin).`
+        });
+      }
+
+      // Potong poin pengguna
+      const updatedUser = await userModel.updatePoints(targetUserId, -cost);
+
+      // Catat riwayat transaksi
+      await coinModel.addHistory({
+        userId: targetUserId,
+        userName: user.nama,
         title: `Tukar: ${promo.title}`,
         category: 'Penukaran Poin',
-        points: -promo.pointsRequired
+        type: 'redeem',
+        points: -cost
       });
 
-      // Generate voucher
-      const voucher = promoModel.redeemPromo(promo_id, 1);
+      // Generate voucher per-pengguna
+      const voucher = await promoModel.redeemPromo(promoId, targetUserId);
 
       return res.status(200).json({
         message: 'Penukaran poin berhasil!',
         voucher,
-        remainingPoints: user.poin
+        remainingPoints: updatedUser ? updatedUser.poin : user.poin - cost,
+        current_balance: updatedUser ? updatedUser.poin : user.poin - cost
       });
     } catch (error) {
+      console.error('Redeem error:', error);
       return res.status(500).json({ error: error.message });
     }
   },
@@ -79,7 +107,9 @@ export const promoController = {
   async claimCode(req, res) {
     try {
       const { code } = req.body;
-      const voucher = promoModel.claimPromoCode(code);
+      const targetUserId = req.userId || req.body.user_id || 1;
+
+      const voucher = await promoModel.claimPromoCode(code, targetUserId);
       return res.status(200).json({
         message: 'Kode promo berhasil diklaim!',
         voucher
@@ -92,8 +122,12 @@ export const promoController = {
   // API Voucher Milik Pengguna
   async getMyVouchers(req, res) {
     try {
-      const vouchers = promoModel.getUserVouchers(1);
-      return res.status(200).json({ vouchers });
+      const targetUserId = req.userId || req.query.user_id || (req.params && req.params.id) || 1;
+      const vouchers = await promoModel.getUserVouchers(targetUserId);
+      return res.status(200).json({
+        vouchers,
+        rewards: vouchers
+      });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }

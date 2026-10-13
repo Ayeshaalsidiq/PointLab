@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { UserProvider } from './context/UserContext';
+import { UserProvider, useUser } from './context/UserContext';
+import { getStoredToken } from './services/api';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './pages/Dashboard';
@@ -13,16 +14,58 @@ import History from './pages/History';
 import AIChat from './pages/AIChat';
 import ChatBubble from './components/ChatBubble';
 
+/**
+ * Route Guard untuk halaman terproteksi.
+ * Jika pengguna belum login (tidak memiliki token), otomatis diarahkan ke /auth.
+ */
+const ProtectedRoute = ({ children }) => {
+  const { token } = useUser();
+  const storedToken = getStoredToken();
+  const location = useLocation();
+
+  if (!token && !storedToken) {
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
+
+/**
+ * Route Guard untuk halaman Auth (Login / Register).
+ * Jika pengguna sudah login, diarahkan langsung ke /dashboard.
+ */
+const PublicOnlyRoute = ({ children }) => {
+  const { token } = useUser();
+  const storedToken = getStoredToken();
+
+  if (token || storedToken) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
+
 const AppContent = () => {
   const location = useLocation();
+  const { token } = useUser();
+  const isAuthenticated = Boolean(token || getStoredToken());
   const isAuthPage = location.pathname === '/auth';
   
   if (isAuthPage) {
     return (
       <Routes location={location}>
-        <Route path="/auth" element={<Auth />} />
+        <Route path="/auth" element={
+          <PublicOnlyRoute>
+            <Auth />
+          </PublicOnlyRoute>
+        } />
       </Routes>
     );
+  }
+
+  // Jika mencoba menembus dashboard atau rute member lewat URL tanpa login, lempar langsung ke /auth
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   return (
@@ -33,15 +76,16 @@ const AppContent = () => {
           {(!['/promo', '/redeem', '/tier-details', '/history', '/chat'].includes(location.pathname) && !location.pathname.startsWith('/promo/')) && <Header />}
           <div key={location.pathname} className="animate-fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, width: '100%' }}>
             <Routes location={location}>
-              <Route path="/" element={<Navigate to="/auth" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/promo" element={<Promo />} />
-              <Route path="/promo/:id" element={<PromoDetail />} />
-              <Route path="/redeem" element={<Redeem />} />
-              <Route path="/membership" element={<Membership />} />
-              <Route path="/tier-details" element={<TierDetails />} />
-              <Route path="/history" element={<History />} />
-              <Route path="/chat" element={<AIChat />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/promo" element={<ProtectedRoute><Promo /></ProtectedRoute>} />
+              <Route path="/promo/:id" element={<ProtectedRoute><PromoDetail /></ProtectedRoute>} />
+              <Route path="/redeem" element={<ProtectedRoute><Redeem /></ProtectedRoute>} />
+              <Route path="/membership" element={<ProtectedRoute><Membership /></ProtectedRoute>} />
+              <Route path="/tier-details" element={<ProtectedRoute><TierDetails /></ProtectedRoute>} />
+              <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+              <Route path="/chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </div>
         </div>

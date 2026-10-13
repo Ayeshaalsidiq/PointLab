@@ -18,14 +18,20 @@ export const dashboardController = {
     res.sendFile(VIEW_PATH);
   },
 
-  // API Cek Saldo Koin & Tier
+  // API Cek Saldo Koin & Tier Per-Pengguna
   async getBalance(req, res) {
     try {
-      const user = userModel.findById(1);
-      const currentTier = coinModel.calculateTier(user ? user.totalPoin : 0);
+      const targetUserId = req.userId || req.query.user_id || 1;
+      const user = await userModel.findById(targetUserId);
+
+      const totalPts = user ? (user.totalPoin ?? user.total_points ?? user.poin ?? 0) : 0;
+      const currentTier = coinModel.calculateTier(totalPts);
+
       return res.status(200).json({
         balance: user ? user.poin : 0,
-        totalPoints: user ? user.totalPoin : 0,
+        coin_balance: user ? user.poin : 0,
+        totalPoints: totalPts,
+        total_points: totalPts,
         tier: currentTier,
         allTiers: coinModel.getTiers()
       });
@@ -34,10 +40,11 @@ export const dashboardController = {
     }
   },
 
-  // API Riwayat Transaksi Poin
+  // API Riwayat Transaksi Poin Per-Pengguna
   async getHistory(req, res) {
     try {
-      const history = coinModel.getHistory(1);
+      const targetUserId = req.userId || req.query.user_id || 1;
+      const history = await coinModel.getHistory(targetUserId);
       return res.status(200).json({ history });
     } catch (error) {
       return res.status(500).json({ error: error.message });

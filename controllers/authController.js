@@ -6,6 +6,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import userModel from '../models/userModel.js';
+import { generateToken } from '../middleware/authMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,7 +18,7 @@ export const authController = {
     res.sendFile(VIEW_PATH);
   },
 
-  // API Login
+  // API Login (Memvalidasi Password Secara Ketat)
   async login(req, res) {
     try {
       const { identifier, password } = req.body;
@@ -25,28 +26,45 @@ export const authController = {
         return res.status(400).json({ error: 'NIM/Email dan Password wajib diisi.' });
       }
 
-      const user = userModel.findByNimOrEmail(identifier);
+      const user = await userModel.findByNimOrEmail(identifier);
       if (!user) {
-        return res.status(404).json({ error: 'Pengguna tidak ditemukan. Silakan registrasi terlebih dahulu.' });
+        return res.status(401).json({
+          error: 'Akun tidak ditemukan. Periksa kembali NIM atau Email Anda.'
+        });
       }
 
-      // Sederhana: validasi kredensial
+      // Verifikasi Password Pengguna
+      const isPasswordValid = userModel.verifyPassword(user, password);
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          error: 'Password yang Anda masukkan salah. Silakan coba lagi.'
+        });
+      }
+
+      // Buat token JWT resmi yang terikat dengan identitas user
+      const token = generateToken(user);
+
       return res.status(200).json({
         message: 'Login berhasil.',
-        token: `jwt_pointlab_${user.id}_${Date.now()}`,
+        token,
         user: {
           id: user.id,
           nama: user.nama,
           nim: user.nim,
           email: user.email,
           phone: user.phone,
+          role: user.role,
           tier: user.tier,
           poin: user.poin,
+          coin_balance: user.coin_balance,
           totalPoin: user.totalPoin,
-          avatar: user.avatar
+          total_points: user.total_points,
+          avatar: user.avatar,
+          avatar_url: user.avatar_url
         }
       });
     } catch (error) {
+      console.error('Login error:', error);
       return res.status(500).json({ error: error.message || 'Terjadi kesalahan pada server.' });
     }
   },
@@ -59,7 +77,11 @@ export const authController = {
         return res.status(400).json({ error: 'NIM dan Password wajib diisi.' });
       }
 
-      const newUser = userModel.create({
+      if (password.length < 6) {
+        return res.status(400).json({ error: 'Password minimal 6 karakter.' });
+      }
+
+      const newUser = await userModel.create({
         nama: nama || name,
         nim,
         email,
@@ -67,9 +89,11 @@ export const authController = {
         password
       });
 
+      const token = generateToken(newUser);
+
       return res.status(201).json({
         message: 'Registrasi berhasil. Selamat datang di PointLab!',
-        token: `jwt_pointlab_${newUser.id}_${Date.now()}`,
+        token,
         user: newUser
       });
     } catch (error) {
@@ -77,18 +101,54 @@ export const authController = {
     }
   },
 
-  // API Get Profile
+  // API Get Profile (Mengembalikan data spesifik per-pengguna berdasarkan Token)
   async getProfile(req, res) {
-    const user = userModel.findById(1); // default active session
-    if (!user) return res.status(404).json({ error: 'User tidak ditemukan.' });
-    return res.status(200).json({ user });
+    try {
+      const targetUserId = req.userId || (req.user ? req.user.id : null);
+      if (!targetUserId) {
+        return res.status(401).json({ error: 'Sesi tidak valid. Harap login kembali.' });
+      }
+
+      const user = await userModel.findById(targetUserId);
+      if (!user) {
+        return res.status(404).json({ error: 'User tidak ditemukan.' });
+      }
+
+      return res.status(200).json({
+        user: {
+          id: user.id,
+          nama: user.nama,
+          nim: user.nim,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          tier: user.tier,
+          poin: user.poin,
+          coin_balance: user.coin_balance,
+          totalPoin: user.totalPoin,
+          total_points: user.total_points,
+          avatar: user.avatar,
+          avatar_url: user.avatar_url
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
   },
 
-  // API Update Profile
+  // API Update Profile (Khusus Pengguna yang Login)
   async updateProfile(req, res) {
     try {
-      const updated = userModel.updateProfile(1, req.body);
-      return res.status(200).json({ message: 'Profil berhasil diperbarui.', user: updated });
+      const targetUserId = req.userId || (req.user ? req.user.id : null);
+      if (!targetUserId) {
+        return res.status(401).json({ error: 'Sesi tidak valid.' });
+      }
+
+      const updated = await userModel.updateProfile(targetUserId, req.body);
+      return res.status(200).json({
+        message: 'Profil berhasil diperbarui.',
+        user: updated
+      });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
@@ -97,11 +157,27 @@ export const authController = {
   // API Change Password
   async changePassword(req, res) {
     try {
-      const { newPassword } = req.body;
-      if (!newPassword || newPassword.length < 6) {
+      const targetUserId = req.userId || (req.user ? req.user.id : null);
+      if (!targetUserId) {
+        return res.status(401).json({ error: 'Sesi tidak valid.' });
+      }
+
+      const { currentPassword, newPassword, password } = req.body;
+      const targetNewPassword = newPassword || password;
+
+      if (!targetNewPassword || targetNewPassword.length < 6) {
         return res.status(400).json({ error: 'Password baru minimal 6 karakter.' });
       }
-      userModel.updatePassword(1, newPassword);
+
+      // Jika ada currentPassword, verifikasi dulu
+      if (currentPassword) {
+        const currentUser = await userModel.findById(targetUserId);
+        if (currentUser && !userModel.verifyPassword(currentUser, currentPassword)) {
+          return res.status(400).json({ error: 'Password saat ini yang Anda masukkan salah.' });
+        }
+      }
+
+      await userModel.updatePassword(targetUserId, targetNewPassword);
       return res.status(200).json({ message: 'Password berhasil diubah.' });
     } catch (error) {
       return res.status(500).json({ error: error.message });
