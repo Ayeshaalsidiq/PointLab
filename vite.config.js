@@ -21,6 +21,11 @@ const ignoreUmamiPlugin = () => ({
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), ignoreUmamiPlugin()],
+  publicDir: 'static',
+  build: {
+    outDir: 'public',
+    emptyOutDir: true
+  },
   server: {
     proxy: {
       '/api': {
