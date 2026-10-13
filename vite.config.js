@@ -1,9 +1,26 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
+// Plugin to prevent Vite build failure if Kroombox injects Umami Analytics script
+const ignoreUmamiPlugin = () => ({
+  name: 'ignore-umami-analytics',
+  transformIndexHtml: {
+    order: 'pre',
+    handler(html) {
+      return html.replace(
+        /<script([^>]*src=["']\/umami-analytics\/script\.js["'][^>]*)><\/script>/gi,
+        (match, attrs) => {
+          if (/type=/i.test(attrs)) return match;
+          return `<script type="module"${attrs}></script>`;
+        }
+      );
+    }
+  }
+});
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), ignoreUmamiPlugin()],
   server: {
     proxy: {
       '/api': {

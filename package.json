@@ -8,8 +8,7 @@
     "start": "node server.js",
     "server": "node server.js",
     "dev": "vite",
-    "build": "vite build && node -e \"import('fs').then(fs => fs.cpSync('dist', 'public', { recursive: true }))\"",
-    "postinstall": "npm run build",
+    "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
   },
