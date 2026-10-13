@@ -7,15 +7,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import userModel from '../models/userModel.js';
 import { generateToken } from '../middleware/authMiddleware.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const VIEW_PATH = path.resolve(__dirname, '../views/index.html');
+import { renderSpaView } from '../helpers/viewHelper.js';
 
 export const authController = {
   // Render View Halaman Auth
   renderView(req, res) {
-    res.sendFile(VIEW_PATH);
+    return renderSpaView(req, res);
   },
 
   // API Login (Memvalidasi Password Secara Ketat)

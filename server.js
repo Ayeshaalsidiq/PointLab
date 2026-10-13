@@ -58,16 +58,19 @@ app.use((req, res) => {
     });
   }
 
-  const viewPath = path.join(__dirname, 'views', 'index.html');
+  const publicHtmlPath = path.join(__dirname, 'public', 'index.html');
   const distHtmlPath = path.join(__dirname, 'dist', 'index.html');
+  const viewPath = path.join(__dirname, 'views', 'index.html');
   
-  if (fs.existsSync(distHtmlPath)) {
+  if (fs.existsSync(publicHtmlPath)) {
+    return res.sendFile(publicHtmlPath);
+  } else if (fs.existsSync(distHtmlPath)) {
     return res.sendFile(distHtmlPath);
   } else if (fs.existsSync(viewPath)) {
     return res.sendFile(viewPath);
   }
   
-  res.status(404).send('View file tidak ditemukan. Pastikan Anda telah menjalankan `npm run build`.');
+  res.status(200).send('<!doctype html><html><head><meta charset="utf-8"><title>PointLab</title></head><body><div id="root">PointLab</div></body></html>');
 });
 
 // Jalankan Server

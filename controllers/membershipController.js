@@ -9,10 +9,7 @@ import { fileURLToPath } from 'url';
 import userModel from '../models/userModel.js';
 import coinModel from '../models/coinModel.js';
 import promoModel from '../models/promoModel.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const VIEW_PATH = path.resolve(__dirname, '../views/index.html');
+import { renderSpaView } from '../helpers/viewHelper.js';
 
 // Helper untuk menemukan member berdasarkan ID atau alias ('me', NIM)
 const resolveMember = async (req) => {
@@ -30,7 +27,7 @@ const resolveMember = async (req) => {
 export const membershipController = {
   // Render View Halaman Membership & Tier Details
   renderView(req, res) {
-    res.sendFile(VIEW_PATH);
+    return renderSpaView(req, res);
   },
 
   // API Rincian Seluruh Tier Keanggotaan

@@ -312,33 +312,51 @@ Jawab ramah, padat, dan jangan pakai nomor sitasi seperti [1].`;
   }, [messages, isTyping]);
 
   const callGeminiAPI = async (userText, recentMessages = []) => {
-    if (!GEMINI_API_KEY) throw new Error("Kunci Gemini tidak dikonfigurasi.");
-    
-    // Sertakan konteks multi-turn dari obrolan terkini
-    const conversationContext = recentMessages.slice(-4).map(m => 
-      `${m.sender === 'user' ? 'Pengguna' : 'Ngolab AI'}: ${m.text}`
-    ).join('\n');
+    // 1. Coba lewat backend PointLab /api/chat/query agar API Key aman di sisi server
+    try {
+      const resp = await fetch('/api/chat/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userText, query: userText })
+      });
+      if (resp.ok) {
+        const result = await resp.json();
+        if (result.answer) return result.answer;
+      }
+    } catch {
+      // Backend query fallback
+    }
 
-    const promptWithContext = conversationContext
-      ? `${systemPrompt}\n\nRiwayat obrolan sebelumnya:\n${conversationContext}\n\nPertanyaan user saat ini: ${userText}`
-      : `${systemPrompt}\n\nPertanyaan pengguna: ${userText}`;
+    // 2. Direct Gemini jika GEMINI_API_KEY disuplai di client
+    if (GEMINI_API_KEY) {
+      const conversationContext = recentMessages.slice(-4).map(m => 
+        `${m.sender === 'user' ? 'Pengguna' : 'Ngolab AI'}: ${m.text}`
+      ).join('\n');
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: promptWithContext }]
-          }
-        ]
-      })
-    });
-    
-    const data = await response.json();
-    if (data.error) throw new Error(data.error.message || "Gemini API error.");
-    return data.candidates[0].content.parts[0].text;
+      const promptWithContext = conversationContext
+        ? `${systemPrompt}\n\nRiwayat obrolan sebelumnya:\n${conversationContext}\n\nPertanyaan user saat ini: ${userText}`
+        : `${systemPrompt}\n\nPertanyaan pengguna: ${userText}`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: promptWithContext }]
+            }
+          ]
+        })
+      });
+      
+      const data = await response.json();
+      if (!data.error && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        return data.candidates[0].content.parts[0].text;
+      }
+    }
+
+    return resolveLocalPointLabKnowledge(userText);
   };
 
   const callRagAPI = async (userText, recentMessages = []) => {

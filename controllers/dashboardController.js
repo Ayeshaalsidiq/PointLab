@@ -7,15 +7,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import userModel from '../models/userModel.js';
 import coinModel from '../models/coinModel.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const VIEW_PATH = path.resolve(__dirname, '../views/index.html');
+import { renderSpaView } from '../helpers/viewHelper.js';
 
 export const dashboardController = {
   // Render View Halaman Dashboard & Beranda
   renderView(req, res) {
-    res.sendFile(VIEW_PATH);
+    return renderSpaView(req, res);
   },
 
   // API Cek Saldo Koin & Tier Per-Pengguna
