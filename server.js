@@ -28,6 +28,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Normalisasi URL jika terdapat duplikasi /api/api dari Frontend / Path Gateway
+app.use((req, _res, next) => {
+  if (req.url.startsWith('/api/api/')) {
+    req.url = req.url.replace('/api/api/', '/api/');
+  }
+  next();
+});
+
 // Sajikan file statis dari public/ dan dist/
 const distPath = path.join(__dirname, 'dist');
 const publicPath = path.join(__dirname, 'public');
@@ -42,8 +50,10 @@ if (fs.existsSync(publicPath)) {
 // Inisialisasi koneksi Database MySQL
 initDb();
 
-// 1. Lapisan API MVC (/api/*)
+// 1. Lapisan API MVC (Mendukung /api/api/*, /api/*, dan Path Gateway Kroombox)
+app.use('/api/api', apiRoutes);
 app.use('/api', apiRoutes);
+app.use('/', apiRoutes);
 
 // 2. Lapisan Web Routes MVC (/dashboard, /auth, /promo, /membership, /chat, dll.)
 app.use('/', webRoutes);
@@ -102,4 +112,3 @@ app.listen(PORT, () => {
 });
 
 export default app;
-
