@@ -4,7 +4,9 @@
  * Sesuai spesifikasi Docs/AYESHA.md & Docs/NURDIN.md
  */
 
-const BASE_URL = (import.meta.env?.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+const BASE_URL = (import.meta.env?.VITE_API_BASE_URL || '')
+  .replace(/\/+$/, '')
+  .replace(/\/api$/i, '');
 
 /**
  * Helper untuk mengambil token auth dari storage
@@ -28,7 +30,7 @@ export const setStoredToken = (token) => {
  * Universal request function dengan penanganan token otomatis
  */
 async function apiRequest(endpoint, options = {}) {
-  const url = `${BASE_URL}${endpoint}`;
+  const url = `${BASE_URL}${endpoint}`.replace(/\/api\/api(\/|$)/, '/api$1');
   const headers = { ...options.headers };
 
   const token = getStoredToken();
