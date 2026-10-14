@@ -218,17 +218,84 @@ export const api = {
   },
 
   // ==========================================
+  // LOYALTY CONTRACT — NGOLAB-GAMI Kontrak (backend harus implementasi)
+  // ==========================================
+  // GET  /api/members/{memberId}/loyalty/balance  -> { currentPoints, balance, totalPoints, tier, allTiers }
+  async getLoyaltyBalance(memberId) {
+    const data = await apiRequest(`/api/members/${memberId}/loyalty/balance`);
+    // Support: new contract { currentPoints, balance, totalPoints, tier, allTiers }
+    //          legacy { points, coin_balance, totalPoints, tier }
+    if (data && typeof data.currentPoints === 'number') return data;
+    if (data && typeof data.balance === 'number') return data;
+    // Legacy fallback
+    if (data && typeof data.points === 'number') {
+      return { currentPoints: data.points, balance: data.coin_balance ?? data.points, totalPoints: data.totalPoints, tier: data.tier };
+    }
+    if (data && typeof data.memberId !== 'undefined') {
+      // Legacy member object
+      return {
+        currentPoints: data.poin ?? data.coin_balance ?? 0,
+        balance: data.coin_balance ?? data.poin ?? 0,
+        totalPoints: data.totalPoin ?? data.total_points ?? data.poin ?? 0,
+        tier: data.tier || 'Classmate',
+      };
+    }
+    return data;
+  },
+
+  // POST /api/members/{memberId}/loyalty/points/earn -> baca header Idempotency-Key
+  async earnPoints(memberId, payload, idempotencyKey) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+    return await apiRequest(`/api/members/${memberId}/loyalty/points/earn`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+  },
+
+  // GET /api/members/{memberId}/redemptions -> riwayat penukaran
+  async getRedemptions(memberId) {
+    const data = await apiRequest(`/api/members/${memberId}/redemptions`);
+    if (Array.isArray(data)) return { redemptions: data };
+    if (data && Array.isArray(data.redemptions)) return data;
+    if (data && Array.isArray(data.history)) return { redemptions: data.history };
+    return data;
+  },
+
+  // ==========================================
   // REWARDS LOYALTY (/api/rewards)
   // ==========================================
   async getRewards() {
-    return await apiRequest('/api/rewards');
+    const data = await apiRequest('/api/rewards');
+    // Kontrak NGOLAB-GAMI: /api/rewards mengembalikan array hadiah langsung.
+    // Fallback (legacy): { promos: [...], rewards: [...] }
+    if (Array.isArray(data)) return { rewards: data };
+    if (data && Array.isArray(data.rewards)) return data;
+    if (data && Array.isArray(data.promos)) return { rewards: data.promos };
+    return data;
   },
 
   async getRewardDetail(id) {
-    return await apiRequest(`/api/rewards/${id}`);
+    const data = await apiRequest(`/api/rewards/${id}`);
+    // Support: response langsung objek reward, atau { reward: {...}, promo: {...} }
+    if (data && data.reward) return data;
+    return { reward: data };
   },
 
-  async redeemReward(rewardId) {
+  // Kontrak NGOLAB-GAMI: POST /api/members/{memberId}/rewards/{rewardId}/redeem (atomic)
+  // Response: { redemptionId, rewardName, redemptionCode, remainingPoints }
+  async redeemReward(memberId, rewardId, idempotencyKey) {
+    const headers = {};
+    if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+    return await apiRequest(`/api/members/${memberId}/rewards/${rewardId}/redeem`, {
+      method: 'POST',
+      headers,
+    });
+  },
+
+  // Legacy fallback: POST /api/rewards/redeem
+  async redeemPromoLegacy(rewardId) {
     return await apiRequest('/api/rewards/redeem', {
       method: 'POST',
       body: JSON.stringify({ reward_id: rewardId, promo_id: rewardId }),

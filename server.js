@@ -58,7 +58,12 @@ app.use('/', apiRoutes);
 // 2. Lapisan Web Routes MVC (/dashboard, /auth, /promo, /membership, /chat, dll.)
 app.use('/', webRoutes);
 
-// 3. Fallback Route (menjamin routing SPA klien dan mencegah kebocoran HTML pada /api)
+// 3. Health Check (H-1 requirement untuk hosting monitor)
+app.get('/api/health', (req, res) => {
+  return res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
+});
+
+// 4. Fallback Route (menjamin routing SPA klien dan mencegah kebocoran HTML pada /api)
 app.use((req, res) => {
   // Jika path diawali dengan /api, pastikan selalu mengembalikan JSON
   if (req.path.startsWith('/api')) {
@@ -89,7 +94,7 @@ app.use((req, res) => {
   res.type('html').status(200).send('<!doctype html><html><head><meta charset="utf-8"><title>PointLab</title></head><body><div id="root">PointLab</div></body></html>');
 });
 
-// 4. Global Error Handler (mencegah crash 500 yang tidak tertangani)
+// 5. Global Error Handler (mencegah crash 500 yang tidak tertangani)
 app.use((err, req, res, _next) => {
   console.error('❌ [Global Error Handler]', err.message || err);
   if (req.path.startsWith('/api')) {
@@ -101,7 +106,7 @@ app.use((err, req, res, _next) => {
   res.type('html').status(200).send('<!doctype html><html><head><meta charset="utf-8"><title>PointLab</title></head><body><div id="root">PointLab</div></body></html>');
 });
 
-// Jalankan Server
+// 6. Jalankan Server
 app.listen(PORT, () => {
   console.log(`====================================================`);
   console.log(`🚀 PointLab MVC Server berjalan di port ${PORT}`);

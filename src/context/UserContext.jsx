@@ -11,6 +11,10 @@ export const useUser = () => useContext(UserContext);
 
 export const UserProvider = ({ children }) => {
   const [token, setToken] = useState(() => getStoredToken());
+  const [memberId, setMemberId] = useState(() => {
+    const saved = localStorage.getItem('pointlab_member_id');
+    return saved || null;
+  });
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('pointlab_user');
     if (saved) {
@@ -164,6 +168,12 @@ export const UserProvider = ({ children }) => {
       const res = await api.getProfile();
       if (res && res.user) {
         setUser(res.user);
+        // Simpan memberId (dari kontrak NGOLAB-GAMI) atau fallback ke user.id
+        const mid = res.user.memberId || res.user.id || res.user.userId;
+        if (mid) {
+          setMemberId(mid);
+          localStorage.setItem('pointlab_member_id', mid);
+        }
         const pts = res.user.coin_balance ?? res.user.currentPoints ?? 0;
         setPoints(pts);
         return res.user;
@@ -173,11 +183,13 @@ export const UserProvider = ({ children }) => {
       if (err.status === 401) {
         api.logout();
         setToken(null);
+        setMemberId(null);
         setUser(null);
         setPoints(0);
         localStorage.removeItem('pointlab_points');
         localStorage.removeItem('pointlab_vouchers');
         localStorage.removeItem('pointlab_user');
+        localStorage.removeItem('pointlab_member_id');
       }
     }
     return null;
@@ -188,15 +200,47 @@ export const UserProvider = ({ children }) => {
     const activeToken = getStoredToken();
     if (!activeToken) return;
 
-    try {
-      const balRes = await api.getCoinBalance();
-      if (balRes && typeof balRes.coin_balance === 'number') {
-        setPoints(balRes.coin_balance);
-      } else if (balRes && typeof balRes.currentPoints === 'number') {
-        setPoints(balRes.currentPoints);
+    // Priority: loyalty balance endpoint (NGOLAB-GAMI kontrak baru)
+    if (memberId) {
+      try {
+        const loyaltyRes = await api.getLoyaltyBalance(memberId);
+        if (loyaltyRes && typeof loyaltyRes.currentPoints === 'number') {
+          setPoints(loyaltyRes.currentPoints);
+        } else if (loyaltyRes && typeof loyaltyRes.balance === 'number') {
+          setPoints(loyaltyRes.balance);
+        }
+      } catch (err) {
+        console.warn('Gagal mengambil loyalty balance, fallback ke coin balance:', err.message);
+        // Fallback ke endpoint lama
+        try {
+          const balRes = await api.getCoinBalance();
+          if (balRes && typeof balRes.coin_balance === 'number') {
+            setPoints(balRes.coin_balance);
+          } else if (balRes && typeof balRes.currentPoints === 'number') {
+            setPoints(balRes.currentPoints);
+          } else if (balRes && typeof balRes.points === 'number') {
+            setPoints(balRes.points);
+          }
+        } catch (err2) {
+          console.warn('Gagal mengambil saldo koin:', err2.message);
+        }
       }
-    } catch (err) {
-      console.warn('Gagal mengambil saldo koin:', err.message);
+    } else {
+      // Fallback: legacy coin balance endpoint
+      try {
+        const balRes = await api.getCoinBalance();
+        if (balRes && typeof balRes.coin_balance === 'number') {
+          setPoints(balRes.coin_balance);
+        } else if (balRes && typeof balRes.currentPoints === 'number') {
+          setPoints(balRes.currentPoints);
+        } else if (balRes && typeof balRes.points === 'number') {
+          setPoints(balRes.points);
+        } else if (balRes && typeof balRes.balance === 'number') {
+          setPoints(balRes.balance);
+        }
+      } catch (err) {
+        console.warn('Gagal mengambil saldo koin:', err.message);
+      }
     }
 
     try {
@@ -274,6 +318,12 @@ export const UserProvider = ({ children }) => {
       }
       if (res.user) {
         setUser(res.user);
+        // Simpan memberId dari respons backend (kontrak NGOLAB-GAMI)
+        const mid = res.user.memberId || res.user.id || res.user.userId;
+        if (mid) {
+          setMemberId(mid);
+          localStorage.setItem('pointlab_member_id', mid);
+        }
         const pts = res.user.coin_balance ?? res.user.currentPoints ?? 0;
         setPoints(pts);
       }
@@ -299,6 +349,12 @@ export const UserProvider = ({ children }) => {
       }
       if (res.user) {
         setUser(res.user);
+        // Simpan memberId dari respons backend (kontrak NGOLAB-GAMI)
+        const mid = res.user.memberId || res.user.id || res.user.userId;
+        if (mid) {
+          setMemberId(mid);
+          localStorage.setItem('pointlab_member_id', mid);
+        }
         const pts = res.user.coin_balance ?? res.user.currentPoints ?? 0;
         setPoints(pts);
       }
@@ -312,6 +368,7 @@ export const UserProvider = ({ children }) => {
   const logout = () => {
     api.logout();
     setToken(null);
+    setMemberId(null);
     setUser(null);
     setPoints(0);
     setRedeemedVouchers([]);
@@ -320,16 +377,46 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem('pointlab_points');
     localStorage.removeItem('pointlab_vouchers');
     localStorage.removeItem('pointlab_user');
+    localStorage.removeItem('pointlab_member_id');
   };
 
-  // Method Redeem Promo
+  // Method Redeem Promo (NGOLAB-GAMI kontrak: POST /api/members/{memberId}/rewards/{rewardId}/redeem)
   const redeemPromo = async (promoId) => {
-    const res = await api.redeemPromo(promoId);
-    if (res.voucher) {
+    let res;
+    if (memberId) {
+      // Kontrak baru: gunakan endpoint member-based yang atomic
+      try {
+        res = await api.redeemReward(memberId, promoId);
+      } catch (err) {
+        console.warn('redeemReward gagal, fallback ke redeemPromoLegacy:', err.message);
+        res = await api.redeemPromoLegacy(promoId);
+      }
+    } else {
+      // Fallback: legacy endpoint
+      res = await api.redeemPromoLegacy(promoId);
+    }
+
+    // Support both response formats:
+    // New: { redemptionId, rewardName, redemptionCode, remainingPoints }
+    // Legacy: { message, voucher, remainingPoints, current_balance }
+    if (res.redemptionCode) {
+      setRedeemedVouchers(prev => [{
+        code: res.redemptionCode,
+        voucher_code: res.redemptionCode,
+        title: res.rewardName || 'Voucher',
+        isUsed: false,
+        status: 'unused',
+      }, ...prev]);
+    } else if (res.voucher) {
       setRedeemedVouchers(prev => [res.voucher, ...prev]);
     }
-    if (typeof res.current_balance === 'number') {
-      setPoints(res.current_balance);
+
+    // Update poin — support both formats
+    const newPoints = typeof res.remainingPoints === 'number'
+      ? res.remainingPoints
+      : (typeof res.current_balance === 'number' ? res.current_balance : null);
+    if (newPoints !== null) {
+      setPoints(newPoints);
     } else {
       refreshCoinData();
     }
@@ -383,6 +470,7 @@ export const UserProvider = ({ children }) => {
       value={{
         token,
         user,
+        memberId,
         points,
         setPoints,
         tierInfo,
