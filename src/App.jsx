@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { UserProvider, useUser } from './context/UserContext';
 import { getStoredToken } from './services/api';
+import { buildReturnUrl, isAllowedRedirect, readPromptParam, readRedirectParam } from './lib/ssoRedirect';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './pages/Dashboard';
@@ -31,14 +33,53 @@ const ProtectedRoute = ({ children }) => {
 };
 
 /**
+ * Sudah login di PointLab tapi datang lewat tautan redirect-auth dari aplikasi
+ * mitra: langsung kembalikan token ke aplikasi asal, tidak ke /dashboard.
+ */
+const SsoReturn = ({ token }) => {
+  const redirect = readRedirectParam();
+  useEffect(() => {
+    if (redirect && isAllowedRedirect(redirect)) {
+      window.location.replace(buildReturnUrl(redirect, token));
+    }
+  }, [redirect, token]);
+  return null;
+};
+
+/**
+ * Aplikasi mitra meminta kredensial eksplisit (`prompt=login`): buang sesi
+ * PointLab yang tersimpan SETELAH mount (useEffect, bukan saat render — setState
+ * saat render komponen lain memicu warning React) lalu tampilkan form Auth.
+ */
+const PromptLogin = ({ children }) => {
+  const { logout } = useUser();
+  useEffect(() => {
+    logout();
+  }, [logout]);
+  return <>{children}</>;
+};
+
+/**
  * Route Guard untuk halaman Auth (Login / Register).
- * Jika pengguna sudah login, diarahkan langsung ke /dashboard.
+ * Jika pengguna sudah login, diarahkan langsung ke /dashboard — kecuali datang
+ * dari alur redirect-auth, maka token dikembalikan ke aplikasi asal, atau
+ * (dengan prompt=login) form kredensial dipaksa tampil.
  */
 const PublicOnlyRoute = ({ children }) => {
   const { token } = useUser();
   const storedToken = getStoredToken();
 
   if (token || storedToken) {
+    // Aplikasi mitra meminta form login eksplisit (tombol Login ditekan):
+    // buang sesi PointLab yang tersimpan supaya kredensial dimasukkan ulang.
+    if (readPromptParam()) {
+      return <PromptLogin>{children}</PromptLogin>;
+    }
+    const redirect = readRedirectParam();
+    const activeToken = token || storedToken;
+    if (redirect && isAllowedRedirect(redirect)) {
+      return <SsoReturn token={activeToken} />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 

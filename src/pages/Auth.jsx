@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Phone, IdCard, CheckSquare, Square, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import logoNgolab from '../assets/logo-ngolab.png';
 import { useUser } from '../context/UserContext';
+import { buildReturnUrl, isAllowedRedirect, readModeParam, readRedirectParam } from '../lib/ssoRedirect';
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(() => readModeParam() !== 'register');
   const [isAnimating, setIsAnimating] = useState(false);
   const [keepLoggedIn, setKeepLoggedIn] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +24,17 @@ const Auth = () => {
 
   const navigate = useNavigate();
   const { login, register } = useUser();
+
+  // Kembali ke aplikasi asal (mis. Ngolab-Gami) dengan token setelah berhasil,
+  // bila halaman ini dibuka lewat alur redirect-auth dengan URL tujuan yang diizinkan.
+  const returnToPartnerApp = (token) => {
+    const redirect = readRedirectParam();
+    if (redirect && isAllowedRedirect(redirect)) {
+      window.location.replace(buildReturnUrl(redirect, token));
+      return true;
+    }
+    return false;
+  };
 
   const toggleAuth = () => {
     setIsAnimating(true);
@@ -44,7 +56,8 @@ const Auth = () => {
       }
       setIsSubmitting(true);
       try {
-        await login(identifier.trim(), password);
+        const res = await login(identifier.trim(), password);
+        if (returnToPartnerApp(res && res.token)) return;
         navigate('/dashboard');
       } catch (err) {
         setErrorMessage(err.message || 'Login gagal. Periksa data kredensial Anda.');
@@ -68,12 +81,13 @@ const Auth = () => {
 
       setIsSubmitting(true);
       try {
-        await register({
+        const res = await register({
           nama: nama.trim(),
           nim: nim.trim(),
           phone: phone.trim(),
           password,
         });
+        if (returnToPartnerApp(res && res.token)) return;
         navigate('/dashboard');
       } catch (err) {
         setErrorMessage(err.message || 'Pendaftaran gagal. Periksa kembali data Anda.');
