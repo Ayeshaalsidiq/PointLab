@@ -18,9 +18,11 @@ router.get('/dashboard', dashboardController.renderView);
 
 // Route Halaman Auth (Login / Register)
 router.get('/auth', authController.renderView);
+router.get('/forgot-password', authController.renderView);
 
 // Route Halaman Riwayat Mutasi Poin
 router.get('/history', dashboardController.renderView);
+router.get('/feedback', authController.renderView);
 
 // Route Halaman Promo & Redeem
 router.get('/promo', promoController.renderView);

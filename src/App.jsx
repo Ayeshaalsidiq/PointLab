@@ -13,6 +13,8 @@ import TierDetails from './pages/TierDetails';
 import History from './pages/History';
 import AIChat from './pages/AIChat';
 import ChatBubble from './components/ChatBubble';
+import ForgotPassword from './pages/ForgotPassword';
+import Feedback from './pages/Feedback';
 
 /**
  * Route Guard untuk halaman terproteksi.
@@ -50,8 +52,10 @@ const AppContent = () => {
   const { token } = useUser();
   const isAuthenticated = Boolean(token || getStoredToken());
   const isAuthPage = location.pathname === '/auth';
+  const isForgotPasswordPage = location.pathname === '/forgot-password';
+  const isFeedbackPage = location.pathname === '/feedback';
   
-  if (isAuthPage) {
+  if (isAuthPage || isForgotPasswordPage) {
     return (
       <Routes location={location}>
         <Route path="/auth" element={
@@ -59,6 +63,7 @@ const AppContent = () => {
             <Auth />
           </PublicOnlyRoute>
         } />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     );
   }
@@ -70,10 +75,10 @@ const AppContent = () => {
 
   return (
     <div className="app-container">
-      {(!['/tier-details', '/history', '/chat'].includes(location.pathname) && !location.pathname.startsWith('/promo/')) && <Sidebar />}
-      <div className="main-content" style={(['/tier-details', '/history', '/chat'].includes(location.pathname) || location.pathname.startsWith('/promo/')) ? { marginLeft: 0, paddingBottom: 0 } : {}}>
+      {(!['/tier-details', '/history', '/chat', '/feedback'].includes(location.pathname) && !location.pathname.startsWith('/promo/')) && <Sidebar />}
+      <div className="main-content" style={(['/tier-details', '/history', '/chat', '/feedback'].includes(location.pathname) || location.pathname.startsWith('/promo/')) ? { marginLeft: 0, paddingBottom: 0 } : {}}>
         <div className="content-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-          {(!['/promo', '/redeem', '/tier-details', '/history', '/chat'].includes(location.pathname) && !location.pathname.startsWith('/promo/')) && <Header />}
+          {(!['/promo', '/redeem', '/tier-details', '/history', '/chat', '/feedback'].includes(location.pathname) && !location.pathname.startsWith('/promo/')) && <Header />}
           <div key={location.pathname} className="animate-fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, width: '100%' }}>
             <Routes location={location}>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -85,6 +90,7 @@ const AppContent = () => {
               <Route path="/tier-details" element={<ProtectedRoute><TierDetails /></ProtectedRoute>} />
               <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
               <Route path="/chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
+              <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </div>

@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { LogOut, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
 const Header = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
+  const { logout } = useUser();
 
   const handleLogout = () => {
+    logout();
     setShowLogoutConfirm(false);
     navigate('/auth');
   };

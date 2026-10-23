@@ -89,6 +89,14 @@ export const api = {
     return payload;
   },
 
+  async forgotPassword(identifier) {
+    const payload = await apiRequest('/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ identifier }),
+    });
+    return payload;
+  },
+
   async register({ nama, name, nim, phone, phone_number, password }) {
     const payload = await apiRequest('/api/auth/register', {
       method: 'POST',

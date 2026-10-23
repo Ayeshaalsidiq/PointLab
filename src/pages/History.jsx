@@ -1,6 +1,6 @@
-import { ArrowLeft, Clock, Coffee, Utensils, Gift, Zap, Gamepad2, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Clock, Coffee, Utensils, Gift, Zap, Gamepad2, ShoppingBag, Star, MessageSquare } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMemo } from 'react';
 import { useUser } from '../context/UserContext';
 
 const defaultHistory = [
@@ -37,6 +37,10 @@ const defaultHistory = [
 const History = () => {
   const navigate = useNavigate();
   const { points, coinHistory, myOrders } = useUser();
+  const [activeTab, setActiveTab] = useState('all');
+  const [reviewModal, setReviewModal] = useState(null);
+  const [reviewText, setReviewText] = useState('');
+  const [reviewRating, setReviewRating] = useState(0);
 
   const formattedHistory = useMemo(() => {
     const list = [];
@@ -59,6 +63,7 @@ const History = () => {
           date: item.created_at ? new Date(item.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : 'Baru saja',
           type,
           points: ptsStr,
+          category: 'poin'
         });
       });
     }
@@ -73,6 +78,9 @@ const History = () => {
           date: ord.created_at ? new Date(ord.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : 'Hari ini',
           type: 'purchase',
           points: ptsEarned > 0 ? `+${ptsEarned}` : 'Selesai',
+          category: 'transaksi',
+          orderId: ord.id,
+          menuItems: ord.items || []
         });
       });
     }
@@ -81,11 +89,27 @@ const History = () => {
     return list.length > 0 ? list : defaultHistory;
   }, [coinHistory, myOrders]);
 
+  const filteredHistory = useMemo(() => {
+    if (activeTab === 'all') return formattedHistory;
+    if (activeTab === 'poin') return formattedHistory.filter(item => item.category === 'poin' || !item.category);
+    if (activeTab === 'transaksi') return formattedHistory.filter(item => item.category === 'transaksi');
+    return formattedHistory;
+  }, [formattedHistory, activeTab]);
+
   const getItemIcon = (type) => {
     if (type === 'redeem') return <Zap size={20} />;
     if (type === 'game') return <Gamepad2 size={20} />;
     if (type === 'bonus') return <Gift size={20} />;
     return <Utensils size={20} />;
+  };
+
+  const handleReviewSubmit = () => {
+    if (!reviewText.trim()) return;
+    setReviewModal(null);
+    setReviewText('');
+    setReviewRating(0);
+    // TODO: Kirim review ke backend
+    alert('Terima kasih! Review Anda telah dikirim.');
   };
 
   return (
@@ -98,7 +122,7 @@ const History = () => {
         >
           <ArrowLeft size={24} color="white" />
         </button>
-        <h1 style={{ color: 'white', fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>Riwayat Poin & Aktivitas</h1>
+        <h1 style={{ color: 'white', fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>Riwayat</h1>
         <div style={{ width: '40px' }} />
       </div>
 
@@ -116,6 +140,34 @@ const History = () => {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div style={{ padding: '0 1.5rem', display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+        {[
+          { id: 'all', label: 'Semua' },
+          { id: 'poin', label: 'Riwayat Poin' },
+          { id: 'transaksi', label: 'Riwayat Transaksi' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              flex: 1,
+              padding: '0.6rem',
+              borderRadius: '12px',
+              border: 'none',
+              background: activeTab === tab.id ? '#FF7A03' : 'rgba(255,255,255,0.05)',
+              color: activeTab === tab.id ? 'white' : '#94A3B8',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <div style={{ 
         background: '#1E1F2E', 
         borderRadius: '32px 32px 0 0', 
@@ -126,9 +178,11 @@ const History = () => {
         flexDirection: 'column',
         gap: '1rem'
       }}>
-        <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: 600, margin: '0 0 0.5rem 0' }}>Aktivitas Terbaru</h3>
+        <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: 600, margin: '0 0 0.5rem 0' }}>
+          {activeTab === 'all' ? 'Semua Aktivitas' : activeTab === 'poin' ? 'Riwayat Poin' : 'Riwayat Transaksi'}
+        </h3>
         
-        {formattedHistory.map((item) => (
+        {filteredHistory.map((item) => (
           <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{ 
@@ -144,15 +198,64 @@ const History = () => {
                 <p style={{ color: '#64748B', margin: 0, fontSize: '0.75rem' }}>{item.date}</p>
               </div>
             </div>
-            <span style={{ 
-              fontWeight: 700, fontSize: '1rem',
-              color: item.type === 'redeem' ? '#EF4444' : '#10B981'
-            }}>
-              {item.points}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ 
+                fontWeight: 700, fontSize: '1rem',
+                color: item.type === 'redeem' ? '#EF4444' : '#10B981'
+              }}>
+                {item.points}
+              </span>
+              {item.category === 'transaksi' && (
+                <button 
+                  onClick={() => setReviewModal(item)}
+                  style={{ background: 'rgba(139, 92, 246, 0.1)', border: 'none', borderRadius: '8px', padding: '0.35rem', cursor: 'pointer', color: '#8B5CF6' }}
+                  title="Beri Ulasan"
+                >
+                  <MessageSquare size={16} />
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
+
+      {/* Review Modal */}
+      {reviewModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }} onClick={() => setReviewModal(null)}>
+          <div className="animate-fade-in" onClick={(e) => e.stopPropagation()} style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '340px', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <h3 style={{ margin: '0 0 1rem 0', color: '#1E293B', fontSize: '1.25rem', fontWeight: 700, textAlign: 'center' }}>Beri Ulasan</h3>
+            <p style={{ margin: '0 0 1rem 0', color: '#64748B', fontSize: '0.85rem', textAlign: 'center' }}>{reviewModal.title}</p>
+            
+            {/* Rating */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setReviewRating(star)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}
+                >
+                  <Star size={28} color={star <= reviewRating ? '#F59E0B' : '#CBD5E1'} fill={star <= reviewRating ? '#F59E0B' : 'none'} />
+                </button>
+              ))}
+            </div>
+
+            {/* Review Text */}
+            <textarea
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              placeholder="Tulis ulasan Anda tentang menu ini..."
+              rows={3}
+              style={{ width: '100%', padding: '1rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '0.9rem', color: '#1E293B', resize: 'vertical', marginBottom: '1rem' }}
+            />
+
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button onClick={() => setReviewModal(null)} style={{ flex: 1, padding: '0.8rem', background: '#F1F5F9', color: '#64748B', border: 'none', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }}>Batal</button>
+              <button onClick={handleReviewSubmit} disabled={!reviewText.trim()} style={{ flex: 1, padding: '0.8rem', background: reviewText.trim() ? '#8B5CF6' : '#E2E8F0', color: reviewText.trim() ? 'white' : '#94A3B8', border: 'none', borderRadius: '12px', fontWeight: 600, cursor: reviewText.trim() ? 'pointer' : 'not-allowed' }}>Kirim</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

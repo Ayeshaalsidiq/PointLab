@@ -25,17 +25,23 @@ const Dashboard = () => {
       <div style={{ padding: '0 1.5rem 1.5rem 1.5rem', flexShrink: 0 }}>
         {/* Tiering Card */}
         <div style={{ 
-          background: 'linear-gradient(135deg, #FFFDF0 0%, #FFFFFF 100%)', 
-          borderRadius: '24px', 
-          padding: '1.5rem', 
-          position: 'relative', 
-          overflow: 'hidden',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '1rem'
-        }}>
+            background: 'linear-gradient(135deg, #FFFDF0 0%, #FFFFFF 100%)', 
+            borderRadius: '24px', 
+            padding: '1.5rem', 
+            position: 'relative', 
+            overflow: 'hidden',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '1rem',
+            cursor: 'pointer',
+            transition: 'transform 0.2s'
+          }}
+          onClick={() => navigate('/tier-details')}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
           
           {/* Bagian Kiri (Teks & Progress Bar) */}
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -88,12 +94,6 @@ const Dashboard = () => {
 
       {/* Quick Actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0.5rem 2.5rem 0.5rem', overflowX: 'auto', flexShrink: 0 }}>
-        <div onClick={() => navigate('/redeem')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8', background: 'rgba(255,255,255,0.05)' }}>
-            <Gift size={20} />
-          </div>
-          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>Tukar<br/>Poin</span>
-        </div>
         <div onClick={() => navigate('/tier-details')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
           <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8', background: 'rgba(255,255,255,0.05)' }}>
             <Trophy size={20} />
@@ -315,67 +315,31 @@ const Dashboard = () => {
         )}
 
         {activeTab === 'Use' && (
-          <div className="tab-content" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1.5rem', color: '#1E293B' }}>Tukar Poin Jadi Voucher</h3>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
-              {/* Voucher 1 - Available */}
-              <div 
-                onClick={() => setSelectedVoucher({title: 'Voucher McD Rp50rb', points: 5000, type: 'Makanan', icon: 'M', color: '#DC2626'})}
-                style={{ border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#F8FAFC', cursor: 'pointer' }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ background: '#DC2626', width: '40px', height: '40px', borderRadius: '50%', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 700, fontSize: '1.2rem' }}>M</div>
-                  <span style={{ fontSize: '0.65rem', background: '#E2E8F0', padding: '0.2rem 0.5rem', borderRadius: '99px', fontWeight: 500, color: '#64748B' }}>Tersedia</span>
-                </div>
-                <div style={{ marginTop: '0.5rem' }}>
-                  <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1E293B' }}>Voucher McD Rp50rb</h4>
-                  <p style={{ fontSize: '0.75rem', color: '#FF7A03', fontWeight: 600, marginTop: '0.25rem' }}>5,000 Pts</p>
-                </div>
-                <button style={{ width: '100%', padding: '0.5rem', background: '#1E293B', color: 'white', border: 'none', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, marginTop: '0.5rem', cursor: 'pointer' }}>
-                  Tukar
-                </button>
+          <div className="tab-content" style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#F8FAFC', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 1.5rem', color: '#FF7A03' }}>
+                <Gift size={40} />
               </div>
-              
-              {/* Voucher 2 - Available */}
-              <div 
-                onClick={() => setSelectedVoucher({title: 'Voucher Starbucks', points: 7500, type: 'Minuman', icon: <Coffee size={20} />, color: '#059669'})}
-                style={{ border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#F8FAFC', cursor: 'pointer' }}
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#1E293B' }}>Tukar Poin</h3>
+              <p style={{ fontSize: '0.85rem', color: '#64748B', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+                Lihat semua hadiah dan voucher yang bisa ditukarkan dengan poin Anda.
+              </p>
+              <button 
+                onClick={() => navigate('/redeem')}
+                style={{ 
+                  padding: '0.75rem 2rem', 
+                  background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '12px', 
+                  fontWeight: 700, 
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 15px rgba(255, 122, 3, 0.3)',
+                  fontSize: '0.9rem'
+                }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ background: '#059669', width: '40px', height: '40px', borderRadius: '50%', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <Coffee size={20} />
-                  </div>
-                  <span style={{ fontSize: '0.65rem', background: '#E2E8F0', padding: '0.2rem 0.5rem', borderRadius: '99px', fontWeight: 500, color: '#64748B' }}>Tersedia</span>
-                </div>
-                <div style={{ marginTop: '0.5rem' }}>
-                  <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1E293B' }}>Voucher Starbucks</h4>
-                  <p style={{ fontSize: '0.75rem', color: '#FF7A03', fontWeight: 600, marginTop: '0.25rem' }}>7,500 Pts</p>
-                </div>
-                <button style={{ width: '100%', padding: '0.5rem', background: '#1E293B', color: 'white', border: 'none', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, marginTop: '0.5rem', cursor: 'pointer' }}>
-                  Tukar
-                </button>
-              </div>
-
-              {/* Voucher 3 - Locked (Requires more points) */}
-              <div 
-                onClick={() => setSelectedVoucher({title: 'Voucher Amazon', points: 10000, type: 'Belanja', icon: <ShoppingBag size={20} />, color: '#1E293B', disabled: true})}
-                style={{ border: '1px solid #E2E8F0', borderRadius: '16px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'white', opacity: 0.6, cursor: 'pointer' }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ background: '#1E293B', width: '40px', height: '40px', borderRadius: '50%', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <ShoppingBag size={20} />
-                  </div>
-                  <span style={{ fontSize: '0.65rem', background: '#FEE2E2', color: '#EF4444', padding: '0.2rem 0.5rem', borderRadius: '99px', fontWeight: 500 }}>Kurang</span>
-                </div>
-                <div style={{ marginTop: '0.5rem' }}>
-                  <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1E293B' }}>Voucher Amazon</h4>
-                  <p style={{ fontSize: '0.75rem', color: '#FF7A03', fontWeight: 600, marginTop: '0.25rem' }}>10,000 Pts</p>
-                </div>
-                <button style={{ width: '100%', padding: '0.5rem', background: '#E2E8F0', color: '#94A3B8', border: 'none', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, marginTop: '0.5rem' }} disabled>
-                  Tukar
-                </button>
-              </div>
+                Lihat Semua Hadiah
+              </button>
             </div>
           </div>
         )}
@@ -385,8 +349,8 @@ const Dashboard = () => {
 
       {/* QR Modal */}
       {showQRModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
-          <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+        <div onClick={() => setShowQRModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
+          <div className="animate-fade-in" onClick={(e) => e.stopPropagation()} style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
             <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.25rem', fontWeight: 700 }}>QR Member</h3>
             <div style={{ fontSize: '0.8rem', color: '#64748B', marginBottom: '1rem', fontWeight: 600 }}>
               {user?.rfid_tag_id ? `RFID: ${user.rfid_tag_id}` : (user?.memberCode ? `KODE: ${user.memberCode}` : `ID: ${user?.id || 'MEMBER'}`)}

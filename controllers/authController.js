@@ -179,6 +179,67 @@ export const authController = {
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
+  },
+
+  // API Forgot Password (kirim email reset)
+  async forgotPassword(req, res) {
+    try {
+      const { identifier } = req.body;
+      if (!identifier || !identifier.trim()) {
+        return res.status(400).json({ error: 'Email atau NIM wajib diisi.' });
+      }
+
+      const user = await userModel.findByNimOrEmail(identifier.trim());
+      if (!user) {
+        return res.status(404).json({ error: 'Akun dengan Email/NIM tersebut tidak ditemukan.' });
+      }
+
+      // TODO: Kirim email reset password via email service
+      // Untuk sementara, simpan token reset ke localStorage (client-side)
+      const resetToken = `reset_${Date.now()}_${user.id}`;
+      return res.status(200).json({
+        message: 'Instruksi reset password telah dikirim ke email Anda.',
+        resetToken,
+        email: user.email,
+        // Dalam production, kirim email dengan link reset
+        note: 'Reset token generated (email service needs to be integrated)'
+      });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  },
+
+  // API Submit Feedback
+  async submitFeedback(req, res) {
+    try {
+      const { category, message, rating } = req.body;
+      const targetUserId = req.userId || req.body.user_id || null;
+
+      if (!message || !message.trim()) {
+        return res.status(400).json({ error: 'Pesan feedback tidak boleh kosong.' });
+      }
+
+      // Store feedback in memory (in production, save to database)
+      const feedback = {
+        id: `fb_${Date.now()}`,
+        userId: targetUserId,
+        category: category || 'Umum',
+        message: message.trim(),
+        rating: rating || null,
+        createdAt: new Date().toISOString()
+      };
+
+      // Append to in-memory storage if available
+      if (!global.feedbacks) global.feedbacks = [];
+      global.feedbacks.push(feedback);
+
+      return res.status(200).json({
+        message: 'Terima kasih! Feedback Anda telah terkirim.',
+        feedback
+      });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
   }
 };
 

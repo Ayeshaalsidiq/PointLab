@@ -1,4 +1,4 @@
-import { Crown, CheckCircle2, ShieldCheck, Settings, LogOut, ChevronRight, Clock, HelpCircle, QrCode, Star, Camera, Lock, Eye, EyeOff } from 'lucide-react';
+import { Crown, CheckCircle2, ShieldCheck, Settings, LogOut, ChevronRight, Clock, HelpCircle, QrCode, Star, Camera, Lock, Eye, EyeOff, AlertTriangle, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
@@ -10,13 +10,17 @@ const Membership = () => {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showBenefitModal, setShowBenefitModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   
   const [profileName, setProfileName] = useState('');
   const [profilePhone, setProfilePhone] = useState('');
+  const [profileEmail, setProfileEmail] = useState('');
+  const [profileNim, setProfileNim] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('Profil berhasil diperbarui!');
   const [isSaving, setIsSaving] = useState(false);
+  const [passwordChangeAlert, setPasswordChangeAlert] = useState(false);
 
   // State untuk Edit Password
   const [password, setPassword] = useState('');
@@ -30,6 +34,8 @@ const Membership = () => {
     if (user) {
       setProfileName(user.nama || user.name || '');
       setProfilePhone(user.phone || user.telp || '');
+      setProfileEmail(user.email || '');
+      setProfileNim(user.nim || '');
       setProfileImage(user.avatar_url || null);
     }
   }, [user]);
@@ -52,24 +58,34 @@ const Membership = () => {
   };
 
   const handleSaveProfile = async () => {
+    // Show alert if password is being changed
+    if (password.trim() || confirmPassword.trim()) {
+      setPasswordChangeAlert(true);
+    }
+
     // Validasi Password jika diisi
     if (password.trim() || confirmPassword.trim()) {
       if (password.length < 6) {
         setPasswordError('Password baru minimal 6 karakter.');
+        setPasswordChangeAlert(false);
         return;
       }
       if (password !== confirmPassword) {
         setPasswordError('Konfirmasi password tidak cocok.');
+        setPasswordChangeAlert(false);
         return;
       }
     }
 
     setIsSaving(true);
+    setPasswordChangeAlert(false);
     try {
-      // 1. Simpan update profil (nama, phone)
+      // 1. Simpan update profil (nama, phone, email, nim)
       await updateProfile({
         nama: profileName.trim(),
         phone: profilePhone.trim(),
+        email: profileEmail.trim(),
+        nim: profileNim.trim(),
       });
 
       // 2. Jika password diisi, update password
@@ -100,8 +116,13 @@ const Membership = () => {
   };
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     logout();
-    navigate('/auth');
+    setShowLogoutConfirm(false);
+    window.location.href = '/auth';
   };
 
   const displayName = profileName || user?.nama || user?.name || 'Member PointLab';
@@ -221,6 +242,7 @@ const Membership = () => {
               {[
                 { icon: <Settings size={20} />, label: 'Pengaturan Profil', color: '#3B82F6' },
                 { icon: <HelpCircle size={20} />, label: 'Pusat Bantuan', color: '#10B981' },
+                { icon: <MessageSquare size={20} />, label: 'Feedback', color: '#8B5CF6' },
                 { icon: <LogOut size={20} />, label: 'Keluar Akun', color: '#EF4444' },
               ].map((item, index) => (
                 <div key={index} style={{ 
@@ -232,11 +254,13 @@ const Membership = () => {
                 }} 
                 onClick={() => {
                   if (item.label === 'Keluar Akun') {
-                    handleLogout();
+                    setShowLogoutConfirm(true);
                   } else if (item.label === 'Pengaturan Profil') {
                     setShowEditProfileModal(true);
                   } else if (item.label === 'Pusat Bantuan') {
                     setShowHelpModal(true);
+                  } else if (item.label === 'Feedback') {
+                    navigate('/feedback');
                   }
                 }}
                 onMouseOver={(e) => e.currentTarget.style.background = '#F8FAFC'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
@@ -261,8 +285,8 @@ const Membership = () => {
 
       {/* QR Modal */}
       {showQRModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
-          <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+        <div onClick={() => setShowQRModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
+          <div className="animate-fade-in" onClick={(e) => e.stopPropagation()} style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
             <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.25rem', fontWeight: 700 }}>QR Member</h3>
             <div style={{ fontSize: '0.8rem', color: '#64748B', marginBottom: '1rem', fontWeight: 600 }}>
               {user?.rfid_tag_id ? `RFID: ${user.rfid_tag_id}` : (user?.memberCode ? `KODE: ${user.memberCode}` : `ID: ${user?.id || 'MEMBER'}`)}
@@ -311,6 +335,18 @@ const Membership = () => {
               <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} style={{ width: '100%', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: '0.9rem', color: '#1E293B' }} />
             </div>
 
+            {/* Email */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>Email</label>
+              <input type="email" value={profileEmail} onChange={(e) => setProfileEmail(e.target.value)} style={{ width: '100%', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: '0.9rem', color: '#1E293B' }} />
+            </div>
+
+            {/* NIM */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>NIM / NIP / No. Identitas</label>
+              <input type="text" value={profileNim} onChange={(e) => setProfileNim(e.target.value)} style={{ width: '100%', padding: '0.75rem 0.85rem', borderRadius: '12px', border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: '0.9rem', color: '#1E293B' }} />
+            </div>
+
             {/* Nomor Telepon */}
             <div style={{ marginBottom: '1.25rem' }}>
               <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>Nomor Telepon</label>
@@ -319,6 +355,12 @@ const Membership = () => {
 
             {/* Kolom Edit Password */}
             <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '1rem', marginBottom: '1.5rem' }}>
+              {passwordChangeAlert && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', padding: '0.75rem', background: '#FEF3C7', borderRadius: '12px', border: '1px solid #FDE68A' }}>
+                  <AlertTriangle size={18} color="#F59E0B" />
+                  <span style={{ fontSize: '0.8rem', color: '#92400E', fontWeight: 600 }}>Anda akan mengganti password akun. Pastikan password baru Anda mudah diingat.</span>
+                </div>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.25rem' }}>
                 <Lock size={15} color="#3B82F6" />
                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1E293B' }}>Ganti Password</span>
@@ -455,6 +497,39 @@ const Membership = () => {
             </div>
 
             <button onClick={() => setShowHelpModal(false)} style={{ width: '100%', padding: '0.85rem', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}>Kembali</button>
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(5px)' }} onClick={() => setShowLogoutConfirm(false)}>
+          <div className="animate-fade-in" onClick={(e) => e.stopPropagation()} style={{ background: 'white', borderRadius: '24px', width: '100%', maxWidth: '320px', padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#FEF2F2', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#EF4444', marginBottom: '1rem' }}>
+              <AlertTriangle size={30} />
+            </div>
+            
+            <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.25rem', fontWeight: 700, textAlign: 'center' }}>
+              Keluar Akun?
+            </h3>
+            <p style={{ margin: '0 0 2rem 0', color: '#64748B', fontSize: '0.875rem', textAlign: 'center', lineHeight: 1.5 }}>
+              Apakah Anda yakin ingin keluar dari aplikasi PointLab?
+            </p>
+
+            <div style={{ display: 'flex', width: '100%', gap: '0.75rem' }}>
+              <button 
+                onClick={() => setShowLogoutConfirm(false)}
+                style={{ flex: 1, background: '#F1F5F9', color: '#475569', border: 'none', padding: '0.8rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Batal
+              </button>
+              <button 
+                onClick={confirmLogout}
+                style={{ flex: 1, background: '#EF4444', color: 'white', border: 'none', padding: '0.8rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)' }}
+              >
+                Ya, Keluar
+              </button>
+            </div>
           </div>
         </div>
       )}

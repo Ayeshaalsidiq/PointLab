@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import tier1Card from '../assets/tier1-card.png';
 import tier2Card from '../assets/tier2-card.png';
 import tier3Card from '../assets/tier3-card.png';
@@ -10,6 +11,7 @@ const UserContext = createContext();
 export const useUser = () => useContext(UserContext);
 
 export const UserProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [token, setToken] = useState(() => getStoredToken());
   const [memberId, setMemberId] = useState(() => {
     const saved = localStorage.getItem('pointlab_member_id');
@@ -306,7 +308,33 @@ export const UserProvider = ({ children }) => {
       refreshOrders();
     }
     refreshPromos();
-  }, [refreshProfile, refreshCoinData, refreshVouchers, refreshPromos, refreshOrders]);
+
+    // Session timeout tracking
+    const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+    const ACTIVITY_EVENTS = ['mousemove', 'keydown', 'scroll', 'click', 'touchstart'];
+
+    const updateActivity = () => {
+      localStorage.setItem('pointlab_last_activity', Date.now().toString());
+    };
+
+    const checkSession = () => {
+      const lastActivity = parseInt(localStorage.getItem('pointlab_last_activity') || '0', 10);
+      const now = Date.now();
+      if (now - lastActivity > SESSION_TIMEOUT && token) {
+        logout();
+        navigate('/auth');
+      }
+    };
+
+    updateActivity();
+    ACTIVITY_EVENTS.forEach(event => window.addEventListener(event, updateActivity));
+    const intervalId = setInterval(checkSession, 30000); // Check every 30s
+
+    return () => {
+      ACTIVITY_EVENTS.forEach(event => window.removeEventListener(event, updateActivity));
+      clearInterval(intervalId);
+    };
+  }, [refreshProfile, refreshCoinData, refreshVouchers, refreshPromos, refreshOrders, token, logout]);
 
   // Method Login
   const login = async (identifier, password) => {
@@ -378,6 +406,7 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem('pointlab_vouchers');
     localStorage.removeItem('pointlab_user');
     localStorage.removeItem('pointlab_member_id');
+    localStorage.removeItem('pointlab_last_activity');
   };
 
   // Method Redeem Promo (NGOLAB-GAMI kontrak: POST /api/members/{memberId}/rewards/{rewardId}/redeem)

@@ -368,6 +368,14 @@ class UserModel {
           fields.push('phone = ?');
           values.push(updateData.phone.trim());
         }
+        if (updateData.email) {
+          fields.push('email = ?');
+          values.push(updateData.email.trim());
+        }
+        if (updateData.nim) {
+          fields.push('nim = ?');
+          values.push(updateData.nim.trim());
+        }
         if (updateData.avatar || updateData.avatar_url) {
           fields.push('avatar_url = ?');
           values.push(updateData.avatar || updateData.avatar_url);
@@ -389,6 +397,8 @@ class UserModel {
 
     if (updateData.nama) user.nama = updateData.nama.trim();
     if (updateData.phone) user.phone = updateData.phone.trim();
+    if (updateData.email) user.email = updateData.email.trim();
+    if (updateData.nim) user.nim = updateData.nim.trim();
     if (updateData.avatar) {
       user.avatar = updateData.avatar;
       user.avatar_url = updateData.avatar;

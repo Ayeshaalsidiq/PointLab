@@ -355,6 +355,19 @@ const Auth = () => {
           </span>
         </div>
 
+        {isLogin && (
+          <div style={{ textAlign: 'center', marginTop: '0.75rem' }}>
+            <span
+              onClick={() => navigate('/forgot-password')}
+              style={{ color: '#94A3B8', fontWeight: 500, cursor: 'pointer', transition: 'color 0.2s', fontSize: '0.75rem' }}
+              onMouseOver={(e) => e.target.style.color = '#FF7A03'}
+              onMouseOut={(e) => e.target.style.color = '#94A3B8'}
+            >
+              Lupa Password?
+            </span>
+          </div>
+        )}
+
       </div>
       
       {/* Footer text outside card */}
