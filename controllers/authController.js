@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import userModel from '../models/userModel.js';
 import { generateToken } from '../middleware/authMiddleware.js';
 import { renderSpaView } from '../helpers/viewHelper.js';
+import { isDbConnected, query } from '../config/db.js';
 
 export const authController = {
   // Render View Halaman Auth
@@ -46,6 +47,7 @@ export const authController = {
         token,
         user: {
           id: user.id,
+          memberId: user.id,
           nama: user.nama,
           nim: user.nim,
           email: user.email,
@@ -91,7 +93,22 @@ export const authController = {
       return res.status(201).json({
         message: 'Registrasi berhasil. Selamat datang di PointLab!',
         token,
-        user: newUser
+        user: {
+          id: newUser.id,
+          memberId: newUser.id,
+          nama: newUser.nama,
+          nim: newUser.nim,
+          email: newUser.email,
+          phone: newUser.phone,
+          role: newUser.role,
+          tier: newUser.tier,
+          poin: newUser.poin,
+          coin_balance: newUser.coin_balance,
+          totalPoin: newUser.totalPoin,
+          total_points: newUser.total_points,
+          avatar: newUser.avatar,
+          avatar_url: newUser.avatar_url
+        }
       });
     } catch (error) {
       return res.status(400).json({ error: error.message });
@@ -114,6 +131,7 @@ export const authController = {
       return res.status(200).json({
         user: {
           id: user.id,
+          memberId: user.id,
           nama: user.nama,
           nim: user.nim,
           email: user.email,
@@ -216,10 +234,9 @@ export const authController = {
       const targetUserId = req.userId || req.body.user_id || null;
 
       if (!message || !message.trim()) {
-        return res.status(400).json({ error: 'Pesan feedback tidak boleh kosong.' });
+        return res.status(400).json({ message: 'Pesan feedback tidak boleh kosong.', code: 'FEEDBACK_EMPTY' });
       }
 
-      // Store feedback in memory (in production, save to database)
       const feedback = {
         id: `fb_${Date.now()}`,
         userId: targetUserId,
@@ -229,16 +246,96 @@ export const authController = {
         createdAt: new Date().toISOString()
       };
 
-      // Append to in-memory storage if available
-      if (!global.feedbacks) global.feedbacks = [];
-      global.feedbacks.push(feedback);
+      // Persist ke MySQL jika tersedia
+      if (isDbConnected()) {
+        try {
+          await query(
+            `INSERT INTO feedbacks (id, user_id, category, message, rating, created_at)
+             VALUES (?, ?, ?, ?, ?, NOW())`,
+            [feedback.id, targetUserId, feedback.category, feedback.message, feedback.rating || null]
+          );
+        } catch (err) {
+          console.warn('MySQL insert feedback error:', err.message);
+        }
+      }
 
       return res.status(200).json({
         message: 'Terima kasih! Feedback Anda telah terkirim.',
+        code: 'FEEDBACK_OK',
         feedback
       });
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ message: error.message || 'Gagal mengirim feedback.', code: 'FEEDBACK_ERROR' });
+    }
+  },
+
+  // API Submit Review per transaksi/menu
+  async submitReview(req, res) {
+    try {
+      const { orderId, menuItemId, rating, reviewText } = req.body;
+      const targetUserId = req.userId || req.body.user_id || null;
+
+      if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({ message: 'Rating harus antara 1-5.', code: 'REVIEW_INVALID_RATING' });
+      }
+      if (!reviewText || !reviewText.trim()) {
+        return res.status(400).json({ message: 'Ulasan tidak boleh kosong.', code: 'REVIEW_EMPTY' });
+      }
+
+      const review = {
+        id: `rv_${Date.now()}`,
+        userId: targetUserId,
+        orderId: orderId || null,
+        menuItemId: menuItemId || null,
+        rating: parseInt(rating, 10),
+        reviewText: reviewText.trim(),
+        createdAt: new Date().toISOString()
+      };
+
+      // Persist ke MySQL
+      if (isDbConnected()) {
+        try {
+          await query(
+            `INSERT INTO reviews (id, user_id, order_id, menu_item_id, rating, review_text, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+            [review.id, targetUserId, review.orderId, review.menuItemId, review.rating, review.reviewText]
+          );
+        } catch (err) {
+          console.warn('MySQL insert review error:', err.message);
+        }
+      }
+
+      return res.status(200).json({
+        message: 'Terima kasih! Ulasan Anda telah dikirim.',
+        code: 'REVIEW_OK',
+        review
+      });
+    } catch (error) {
+      return res.status(500).json({ message: error.message || 'Gagal mengirim ulasan.', code: 'REVIEW_ERROR' });
+    }
+  },
+
+  // API Logout (invalidate token / session)
+  async logout(req, res) {
+    try {
+      // Catat logout ke audit log jika tersedia
+      if (isDbConnected() && req.userId) {
+        try {
+          await query(
+            `INSERT INTO audit_logs (user, action, target, status) VALUES (?, 'logout', 'session', 'success')`,
+            [req.userId]
+          );
+        } catch (err) {
+          // abaikan error audit
+        }
+      }
+
+      return res.status(200).json({
+        message: 'Logout berhasil.',
+        code: 'LOGOUT_OK'
+      });
+    } catch (error) {
+      return res.status(500).json({ message: error.message || 'Gagal logout.', code: 'LOGOUT_ERROR' });
     }
   }
 };

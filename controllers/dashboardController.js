@@ -33,7 +33,7 @@ export const dashboardController = {
         allTiers: coinModel.getTiers()
       });
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ message: error.message, code: 'BALANCE_ERROR' });
     }
   },
 
@@ -44,7 +44,7 @@ export const dashboardController = {
       const history = await coinModel.getHistory(targetUserId);
       return res.status(200).json({ history });
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ message: error.message, code: 'HISTORY_ERROR' });
     }
   }
 };

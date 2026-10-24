@@ -28,12 +28,53 @@ try {
   console.warn('⚠️ Gagal menginisialisasi MySQL pool:', err.message);
 }
 
+const createMissingTables = async (conn) => {
+  // Tabel feedbacks
+  await conn.execute(`
+    CREATE TABLE IF NOT EXISTS \`feedbacks\` (
+      \`id\` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+      \`user_id\` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+      \`category\` varchar(50) COLLATE utf8mb4_general_ci DEFAULT 'Umum',
+      \`message\` text COLLATE utf8mb4_general_ci NOT NULL,
+      \`rating\` int DEFAULT NULL,
+      \`created_at\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (\`id\`),
+      KEY \`idx_feedbacks_user\` (\`user_id\`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `);
+
+  // Tabel reviews
+  await conn.execute(`
+    CREATE TABLE IF NOT EXISTS \`reviews\` (
+      \`id\` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+      \`user_id\` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+      \`order_id\` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+      \`menu_item_id\` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+      \`rating\` int NOT NULL,
+      \`review_text\` text COLLATE utf8mb4_general_ci NOT NULL,
+      \`created_at\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (\`id\`),
+      KEY \`idx_reviews_user\` (\`user_id\`),
+      KEY \`idx_reviews_order\` (\`order_id\`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `);
+};
+
 export const initDb = async () => {
   if (!pool) return false;
   try {
     const conn = await pool.getConnection();
     isConnected = true;
     console.log(`✅ [Database] Berhasil terhubung ke database MySQL '${process.env.DB_NAME || 'gesture_eats'}'`);
+
+    // Buat tabel tambahan jika belum ada
+    try {
+      await createMissingTables(conn);
+      console.log('✅ [Database] Tabel feedbacks & reviews siap.');
+    } catch (tableErr) {
+      console.warn('⚠️ [Database] Gagal membuat tabel tambahan:', tableErr.message);
+    }
+
     conn.release();
     return true;
   } catch (err) {

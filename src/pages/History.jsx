@@ -2,6 +2,7 @@ import { ArrowLeft, Clock, Coffee, Utensils, Gift, Zap, Gamepad2, ShoppingBag, S
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import { api } from '../services/api';
 
 const defaultHistory = [
   {
@@ -103,13 +104,22 @@ const History = () => {
     return <Utensils size={20} />;
   };
 
-  const handleReviewSubmit = () => {
+  const handleReviewSubmit = async () => {
     if (!reviewText.trim()) return;
-    setReviewModal(null);
-    setReviewText('');
-    setReviewRating(0);
-    // TODO: Kirim review ke backend
-    alert('Terima kasih! Review Anda telah dikirim.');
+    try {
+      await api.submitReview({
+        orderId: reviewModal.orderId || null,
+        menuItemId: reviewModal.menuItems?.[0]?.id || null,
+        rating: reviewRating,
+        reviewText: reviewText.trim()
+      });
+    } catch (err) {
+      console.error('Gagal mengirim review:', err);
+    } finally {
+      setReviewModal(null);
+      setReviewText('');
+      setReviewRating(0);
+    }
   };
 
   return (

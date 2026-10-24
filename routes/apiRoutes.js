@@ -21,6 +21,8 @@ router.post('/auth/login', authController.login);
 router.post('/auth/register', authController.register);
 router.post('/auth/forgot-password', authController.forgotPassword);
 router.post('/auth/feedback', authController.submitFeedback);
+router.post('/auth/review', authController.submitReview);
+router.post('/auth/logout', authController.logout);
 router.get('/users/profile', requireAuth, authController.getProfile);
 router.put('/users/profile', requireAuth, authController.updateProfile);
 router.post('/auth/change-password', requireAuth, authController.changePassword);
@@ -46,9 +48,17 @@ router.get('/members/:id/vouchers', optionalAuth, membershipController.getMember
 router.get('/members/:id/rewards', optionalAuth, membershipController.getMemberVouchers);
 
 // ==========================================
-// 4. REWARDS & KATALOG PENUKARAN (/api/rewards)
+// 4. LOYALTY CONTRACT ENDPOINTS (NGOLAB-GAMI Kontrak)
 // ==========================================
-router.get('/rewards', promoController.getPromos);
+router.get('/members/:memberId/loyalty/balance', optionalAuth, membershipController.getLoyaltyBalance);
+router.post('/members/:memberId/loyalty/points/earn', optionalAuth, membershipController.earnPoints);
+router.get('/members/:memberId/redemptions', optionalAuth, membershipController.getRedemptions);
+router.post('/members/:memberId/rewards/:rewardId/redeem', optionalAuth, membershipController.redeemReward);
+
+// ==========================================
+// 5. REWARDS & KATALOG PENUKARAN (/api/rewards)
+// ==========================================
+router.get('/rewards', promoController.getRewards);
 router.get('/rewards/my', optionalAuth, promoController.getMyVouchers);
 router.get('/rewards/my-rewards', optionalAuth, promoController.getMyVouchers);
 router.post('/rewards/redeem', optionalAuth, promoController.redeem);
@@ -57,7 +67,7 @@ router.get('/rewards/:id', promoController.getPromoDetail);
 router.post('/rewards/:id/redeem', optionalAuth, promoController.redeem);
 
 // ==========================================
-// 5. KATALOG PROMO & VOUCHER (/api/promos, /api/vouchers)
+// 6. KATALOG PROMO & VOUCHER (/api/promos, /api/vouchers)
 // ==========================================
 router.get('/promos', promoController.getPromos);
 router.get('/promos/:id', promoController.getPromoDetail);
@@ -67,18 +77,18 @@ router.get('/vouchers/my-vouchers', optionalAuth, promoController.getMyVouchers)
 router.get('/vouchers/:id', promoController.getPromoDetail);
 
 // ==========================================
-// 6. AI CHATBOT KNOWLEDGE BASE
+// 7. AI CHATBOT KNOWLEDGE BASE
 // ==========================================
 router.post('/chat/query', chatController.queryChat);
 router.get('/chat/knowledge', chatController.getKnowledgeBase);
 
 // ==========================================
-// 7. API 404 HANDLER (MENJAMIN SELURUH /api/* MERESPON JSON, BUKAN HTML SPA)
+// 8. API 404 HANDLER (MENJAMIN SELURUH /api/* MERESPON JSON, BUKAN HTML SPA)
 // ==========================================
 router.use((req, res) => {
   res.status(404).json({
-    error: 'Not Found',
-    message: `Endpoint API ${req.method} ${req.originalUrl} tidak ditemukan pada server PointLab.`
+    message: 'Endpoint API tidak ditemukan.',
+    code: 'NOT_FOUND'
   });
 });
 

@@ -196,43 +196,19 @@ class UserModel {
 
     const plain = String(candidatePassword);
 
-    // 1. Cek plain text jika tersedia
-    if (user.passwordPlain && user.passwordPlain === plain) {
-      return true;
-    }
-
-    // 2. Cek passwordHash
+    // Hanya bcrypt yang diizinkan
     const hash = user.passwordHash || user.password_hash;
     if (!hash) {
-      // Jika user tidak punya password di database, gunakan default '123456'
-      return plain === '123456' || plain === 'password123';
+      return false;
     }
 
-    // 2a. Cek bcrypt ($2a$ / $2b$ / $2y$)
+    // Cek bcrypt ($2a$ / $2b$ / $2y$)
     if (typeof hash === 'string' && hash.startsWith('$2')) {
       try {
         if (bcrypt.compareSync(plain, hash)) return true;
       } catch (e) {
         // Abaikan error compare bcrypt
       }
-    }
-
-    // 2b. Cek SHA-256 (panjang 64 hex karakter, seperti di gesture_eats.sql)
-    if (typeof hash === 'string' && hash.length === 64) {
-      const sha256Input = crypto.createHash('sha256').update(plain).digest('hex');
-      if (sha256Input.toLowerCase() === hash.toLowerCase()) {
-        return true;
-      }
-    }
-
-    // 2c. Cek exact string equality jika password disimpan plain di passwordHash
-    if (hash === plain) {
-      return true;
-    }
-
-    // 2d. Fallback demo password untuk akun demo bawaan jika passwordHash bukan format standar
-    if (plain === '123456' || plain === 'password123' || plain === '12345678') {
-      if (user.nim === '6706210001' || user.id === 1) return true;
     }
 
     return false;
@@ -340,7 +316,6 @@ class UserModel {
       totalPoin: initialPoints,
       avatar: null,
       avatar_url: null,
-      password_plain: password,
       passwordHash: hashedPassword,
       createdAt: new Date().toISOString()
     };

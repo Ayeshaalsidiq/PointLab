@@ -18,6 +18,7 @@ export const generateToken = (user) => {
   return jwt.sign(
     {
       id: user.id,
+      memberId: user.id,
       nim: user.nim || '',
       email: user.email || '',
       nama: user.nama || user.name || ''

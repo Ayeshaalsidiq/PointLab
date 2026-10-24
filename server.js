@@ -24,7 +24,24 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  'https://gami.ngolab.online',
+  'https://point.ngolab.online',
+  'http://localhost:3000',
+  'http://localhost:5173'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Izinkan semua untuk development, bisa dibatasi di production
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -50,6 +67,11 @@ if (fs.existsSync(publicPath)) {
 // Inisialisasi koneksi Database MySQL
 initDb();
 
+// Health Check (H-1 requirement untuk hosting monitor) — harus didefinisikan SEBELUM apiRoutes
+app.get('/api/health', (req, res) => {
+  return res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
+});
+
 // 1. Lapisan API MVC (Mendukung /api/api/*, /api/*, dan Path Gateway Kroombox)
 app.use('/api/api', apiRoutes);
 app.use('/api', apiRoutes);
@@ -57,11 +79,6 @@ app.use('/', apiRoutes);
 
 // 2. Lapisan Web Routes MVC (/dashboard, /auth, /promo, /membership, /chat, dll.)
 app.use('/', webRoutes);
-
-// 3. Health Check (H-1 requirement untuk hosting monitor)
-app.get('/api/health', (req, res) => {
-  return res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
-});
 
 // 4. Fallback Route (menjamin routing SPA klien dan mencegah kebocoran HTML pada /api)
 app.use((req, res) => {

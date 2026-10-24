@@ -16,7 +16,17 @@ export const promoController = {
     return renderSpaView(req, res);
   },
 
-  // API Daftar Promo / Rewards Tersedia
+  // API Daftar Promo / Rewards Tersedia (kontrak: array langsung)
+  async getRewards(req, res) {
+    try {
+      const promos = await promoModel.getAllPromos();
+      return res.status(200).json(promos);
+    } catch (error) {
+      return res.status(500).json({ message: error.message, code: 'REWARDS_ERROR' });
+    }
+  },
+
+  // API Daftar Promo / Rewards Tersedia (legacy wrapper)
   async getPromos(req, res) {
     try {
       const promos = await promoModel.getAllPromos();
@@ -25,7 +35,7 @@ export const promoController = {
         rewards: promos // alias untuk endpoint rewards
       });
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ message: error.message, code: 'PROMOS_ERROR' });
     }
   },
 
@@ -35,14 +45,14 @@ export const promoController = {
       const promoId = req.params.id || req.params.promoId;
       const promo = await promoModel.getPromoById(promoId);
       if (!promo) {
-        return res.status(404).json({ error: 'Promo / reward tidak ditemukan.' });
+        return res.status(404).json({ message: 'Promo / reward tidak ditemukan.', code: 'REWARD_NOT_FOUND' });
       }
       return res.status(200).json({
         promo,
         reward: promo
       });
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ message: error.message, code: 'REWARD_DETAIL_ERROR' });
     }
   },
 
@@ -51,24 +61,25 @@ export const promoController = {
     try {
       const promoId = req.body.promo_id || req.body.reward_id || req.body.promoId || req.params.id;
       if (!promoId) {
-        return res.status(400).json({ error: 'ID promo / reward wajib disertakan.' });
+        return res.status(400).json({ message: 'ID promo / reward wajib disertakan.', code: 'REDEEM_MISSING_ID' });
       }
 
       const targetUserId = req.userId || req.body.user_id || 1;
       const promo = await promoModel.getPromoById(promoId);
       if (!promo) {
-        return res.status(404).json({ error: 'Promo / reward tidak valid.' });
+        return res.status(404).json({ message: 'Promo / reward tidak valid.', code: 'REWARD_NOT_FOUND' });
       }
 
       const user = await userModel.findById(targetUserId);
       if (!user) {
-        return res.status(404).json({ error: 'Pengguna tidak ditemukan.' });
+        return res.status(404).json({ message: 'Pengguna tidak ditemukan.', code: 'USER_NOT_FOUND' });
       }
 
       const cost = promo.pointsRequired || promo.coin_cost || 0;
       if (user.poin < cost) {
         return res.status(400).json({
-          error: `Saldo poin Anda (${user.poin}) tidak mencukupi untuk menukar voucher ini (${cost} poin).`
+          message: `Saldo poin Anda (${user.poin}) tidak mencukupi untuk menukar voucher ini (${cost} poin).`,
+          code: 'REDEEM_INSUFFICIENT_POINTS'
         });
       }
 
@@ -96,7 +107,7 @@ export const promoController = {
       });
     } catch (error) {
       console.error('Redeem error:', error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ message: error.message, code: 'REDEEM_ERROR' });
     }
   },
 
@@ -109,10 +120,11 @@ export const promoController = {
       const voucher = await promoModel.claimPromoCode(code, targetUserId);
       return res.status(200).json({
         message: 'Kode promo berhasil diklaim!',
+        code: 'CLAIM_OK',
         voucher
       });
     } catch (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ message: error.message, code: 'CLAIM_ERROR' });
     }
   },
 
@@ -126,7 +138,7 @@ export const promoController = {
         rewards: vouchers
       });
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ message: error.message, code: 'MY_VOUCHERS_ERROR' });
     }
   }
 };

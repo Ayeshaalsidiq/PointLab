@@ -114,6 +114,8 @@ export const api = {
   },
 
   logout() {
+    // Panggil endpoint logout di backend (fire-and-forget)
+    apiRequest('/api/auth/logout', { method: 'POST' }).catch(() => {});
     setStoredToken(null);
     localStorage.removeItem('pointlab_user');
   },
@@ -156,6 +158,13 @@ export const api = {
     return await apiRequest('/api/users/avatar', {
       method: 'POST',
       body,
+    });
+  },
+
+  async submitReview(reviewData) {
+    return await apiRequest('/api/auth/review', {
+      method: 'POST',
+      body: JSON.stringify(reviewData),
     });
   },
 

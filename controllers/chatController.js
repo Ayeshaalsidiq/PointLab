@@ -21,7 +21,7 @@ export const chatController = {
       const userText = message || query || '';
 
       if (!userText.trim()) {
-        return res.status(400).json({ error: 'Pesan tidak boleh kosong.' });
+        return res.status(400).json({ message: 'Pesan tidak boleh kosong.', code: 'CHAT_EMPTY' });
       }
 
       // 1. Cek Knowledge Base Lokal RAG
@@ -66,7 +66,7 @@ Jawab secara ramah, singkat, dan informatif mengenai PointLab, poin, dan kantin 
         answer: `Halo! Saya asisten resmi WarmingUp (Ngolab) Lantai 4 FIT Telkom University. Pertanyaan Anda mengenai "${userText}" sedang kami proses. Untuk informasi menu, promo, poin, jam buka, atau kerja sama, silakan tanyakan langsung ke saya!`
       });
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ message: error.message, code: 'CHAT_ERROR' });
     }
   },
 
@@ -76,7 +76,7 @@ Jawab secara ramah, singkat, dan informatif mengenai PointLab, poin, dan kantin 
       const kb = chatModel.getKnowledgeBase();
       return res.status(200).json({ knowledgeBase: kb });
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ message: error.message, code: 'KB_ERROR' });
     }
   }
 };
