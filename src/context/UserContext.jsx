@@ -84,9 +84,10 @@ export const UserProvider = ({ children }) => {
         nextPoints: 5001,
         progress: Math.min(100, Math.max(0, (currentPts / 5001) * 100)),
         benefits: [
-          'Dapat 1x poin tiap transaksi kantin atau game.',
-          'Akses promo kantin bulanan WarmingUp.',
-          'Gratis 1 minuman ringan selamat datang.'
+          'Dapat 1x poin tiap transaksi',
+          'Akses promo kantin bulanan',
+          'Gratis 1 minuman ringan selamat datang',
+          'Akses memberi ulasan menu'
         ]
       };
     } else if (currentPts < 15001) {
@@ -107,9 +108,11 @@ export const UserProvider = ({ children }) => {
         nextPoints: 15001,
         progress: Math.min(100, Math.max(0, ((currentPts - 5001) / (15001 - 5001)) * 100)),
         benefits: [
-          'Dapat 1.2x poin tiap transaksi & sesi belajar.',
-          'Upsize minuman 1x per minggu gratis di WarmingUp.',
-          'Akses promo 2 hari lebih awal.'
+          'Dapat 1.2x poin tiap transaksi',
+          'Upsize minuman 1x per minggu gratis',
+          '1 topping tambahan gratis',
+          'Akses promo 2 hari lebih awal',
+          'Diskon 5% setiap Selasa'
         ]
       };
     } else if (currentPts < 35001) {
@@ -130,9 +133,12 @@ export const UserProvider = ({ children }) => {
         nextPoints: 35001,
         progress: Math.min(100, Math.max(0, ((currentPts - 15001) / (35001 - 15001)) * 100)),
         benefits: [
-          'Dapat 1.5x poin tiap transaksi & game.',
-          'Potongan 5% di semua menu tanpa minimal pembelian.',
-          'Gratis Main Course saat Ulang Tahun.'
+          'Dapat 1.5x poin tiap transaksi',
+          'Potongan 5% di semua menu',
+          'Gratis Main Course + Cake saat Ulang Tahun',
+          'Prioritas antrian dapur lebih cepat',
+          'Akses pesan menu rahasia (Secret Menu)',
+          'Reservasi meja favorit'
         ]
       };
     } else {
@@ -153,9 +159,14 @@ export const UserProvider = ({ children }) => {
         nextPoints: currentPts, 
         progress: 100,
         benefits: [
-          'Dapat 2x lipat poin di setiap transaksi & aktivitas.',
-          'Diskon khusus 30% setiap bulan.',
-          'Bonus item acak (minuman/snack) mingguan gratis.'
+          'Dapat 2x poin tiap transaksi & aktivitas',
+          'Diskon tetap 15% tanpa minimum pembelian',
+          'Bebas upsize minuman kapan saja tanpa batas',
+          'Voucher traktiran ulang tahun Rp 150.000',
+          'VVIP seating / meja selalu tersedia tanpa antri',
+          'Bebas custom menu makanan eksklusif',
+          'Gratis kopi setiap pagi',
+          'Layanan customer service VIP 24/7'
         ]
       };
     }
@@ -297,7 +308,24 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
-  // Inisialisasi data saat aplikasi dibuka
+  // Method Logout
+  const logout = useCallback(() => {
+    api.logout();
+    setToken(null);
+    setMemberId(null);
+    setUser(null);
+    setPoints(0);
+    setRedeemedVouchers([]);
+    setCoinHistory([]);
+    setMyOrders([]);
+    localStorage.removeItem('pointlab_points');
+    localStorage.removeItem('pointlab_vouchers');
+    localStorage.removeItem('pointlab_user');
+    localStorage.removeItem('pointlab_member_id');
+    localStorage.removeItem('pointlab_last_activity');
+  }, []);
+
+  // Inisialisasi data & pemantauan sesi saat aplikasi dibuka
   useEffect(() => {
     const activeToken = getStoredToken();
     if (activeToken) {
@@ -309,7 +337,7 @@ export const UserProvider = ({ children }) => {
     }
     refreshPromos();
 
-    // Session timeout tracking
+    // Session timeout tracking (10 menit tanpa aktivitas pengguna)
     const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 minutes
     const ACTIVITY_EVENTS = ['mousemove', 'keydown', 'scroll', 'click', 'touchstart'];
 
@@ -318,23 +346,32 @@ export const UserProvider = ({ children }) => {
     };
 
     const checkSession = () => {
-      const lastActivity = parseInt(localStorage.getItem('pointlab_last_activity') || '0', 10);
+      const activeTok = getStoredToken();
+      if (!activeTok) return;
+
+      const lastActivityStr = localStorage.getItem('pointlab_last_activity');
+      if (!lastActivityStr) {
+        updateActivity();
+        return;
+      }
+
+      const lastActivity = parseInt(lastActivityStr, 10);
       const now = Date.now();
-      if (now - lastActivity > SESSION_TIMEOUT && token) {
+      if (now - lastActivity > SESSION_TIMEOUT) {
         logout();
-        navigate('/auth');
+        window.location.href = '/auth';
       }
     };
 
     updateActivity();
-    ACTIVITY_EVENTS.forEach(event => window.addEventListener(event, updateActivity));
-    const intervalId = setInterval(checkSession, 30000); // Check every 30s
+    ACTIVITY_EVENTS.forEach(event => window.addEventListener(event, updateActivity, { passive: true }));
+    const intervalId = setInterval(checkSession, 15000); // Check every 15s
 
     return () => {
       ACTIVITY_EVENTS.forEach(event => window.removeEventListener(event, updateActivity));
       clearInterval(intervalId);
     };
-  }, [refreshProfile, refreshCoinData, refreshVouchers, refreshPromos, refreshOrders, token, logout]);
+  }, [refreshProfile, refreshCoinData, refreshVouchers, refreshPromos, refreshOrders, logout]);
 
   // Method Login
   const login = async (identifier, password) => {
@@ -355,6 +392,7 @@ export const UserProvider = ({ children }) => {
         const pts = res.user.coin_balance ?? res.user.currentPoints ?? 0;
         setPoints(pts);
       }
+      localStorage.setItem('pointlab_last_activity', Date.now().toString());
       // Ambil data terbaru
       await Promise.allSettled([
         refreshCoinData(),
@@ -386,27 +424,11 @@ export const UserProvider = ({ children }) => {
         const pts = res.user.coin_balance ?? res.user.currentPoints ?? 0;
         setPoints(pts);
       }
+      localStorage.setItem('pointlab_last_activity', Date.now().toString());
       return res;
     } finally {
       setLoading(false);
     }
-  };
-
-  // Method Logout
-  const logout = () => {
-    api.logout();
-    setToken(null);
-    setMemberId(null);
-    setUser(null);
-    setPoints(0);
-    setRedeemedVouchers([]);
-    setCoinHistory([]);
-    setMyOrders([]);
-    localStorage.removeItem('pointlab_points');
-    localStorage.removeItem('pointlab_vouchers');
-    localStorage.removeItem('pointlab_user');
-    localStorage.removeItem('pointlab_member_id');
-    localStorage.removeItem('pointlab_last_activity');
   };
 
   // Method Redeem Promo (NGOLAB-GAMI kontrak: POST /api/members/{memberId}/rewards/{rewardId}/redeem)

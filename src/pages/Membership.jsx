@@ -21,6 +21,7 @@ const Membership = () => {
   const [toastMessage, setToastMessage] = useState('Profil berhasil diperbarui!');
   const [isSaving, setIsSaving] = useState(false);
   const [passwordChangeAlert, setPasswordChangeAlert] = useState(false);
+  const [showPasswordConfirmModal, setShowPasswordConfirmModal] = useState(false);
 
   // State untuk Edit Password
   const [password, setPassword] = useState('');
@@ -58,27 +59,28 @@ const Membership = () => {
   };
 
   const handleSaveProfile = async () => {
-    // Show alert if password is being changed
-    if (password.trim() || confirmPassword.trim()) {
-      setPasswordChangeAlert(true);
-    }
-
     // Validasi Password jika diisi
     if (password.trim() || confirmPassword.trim()) {
       if (password.length < 6) {
         setPasswordError('Password baru minimal 6 karakter.');
-        setPasswordChangeAlert(false);
         return;
       }
       if (password !== confirmPassword) {
         setPasswordError('Konfirmasi password tidak cocok.');
-        setPasswordChangeAlert(false);
         return;
       }
+      // Tampilkan modal peringatan konfirmasi ganti password
+      setShowPasswordConfirmModal(true);
+      return;
     }
 
+    // Jika tidak ada perubahan password, langsung simpan
+    await executeSaveProfile();
+  };
+
+  const executeSaveProfile = async () => {
     setIsSaving(true);
-    setPasswordChangeAlert(false);
+    setShowPasswordConfirmModal(false);
     try {
       // 1. Simpan update profil (nama, phone, email, nim)
       await updateProfile({
@@ -230,7 +232,7 @@ const Membership = () => {
                <div style={{ width: '56px', height: '56px', borderRadius: '18px', background: '#F8FAFC', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#F59E0B', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}>
                  <ShieldCheck size={26} />
                </div>
-               <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#1E293B' }}>Keuntungan</span>
+               <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#1E293B' }}>Member Benefit</span>
              </div>
           </div>
 
@@ -355,10 +357,10 @@ const Membership = () => {
 
             {/* Kolom Edit Password */}
             <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '1rem', marginBottom: '1.5rem' }}>
-              {passwordChangeAlert && (
+              {password.trim() && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', padding: '0.75rem', background: '#FEF3C7', borderRadius: '12px', border: '1px solid #FDE68A' }}>
                   <AlertTriangle size={18} color="#F59E0B" />
-                  <span style={{ fontSize: '0.8rem', color: '#92400E', fontWeight: 600 }}>Anda akan mengganti password akun. Pastikan password baru Anda mudah diingat.</span>
+                  <span style={{ fontSize: '0.8rem', color: '#92400E', fontWeight: 600 }}>Peringatan: Anda akan mengganti password akun PointLab.</span>
                 </div>
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.25rem' }}>
@@ -432,7 +434,7 @@ const Membership = () => {
       {showBenefitModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
           <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-            <h3 style={{ margin: '0 0 1.5rem 0', color: '#1E293B', textAlign: 'center', fontSize: '1.25rem', fontWeight: 700 }}>Keuntungan Membership</h3>
+            <h3 style={{ margin: '0 0 1.5rem 0', color: '#1E293B', textAlign: 'center', fontSize: '1.25rem', fontWeight: 700 }}>Member Benefit</h3>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: `linear-gradient(135deg, ${tierInfo.colors.secondary} 0%, ${tierInfo.colors.secondaryGrad} 100%)`, padding: '1rem', borderRadius: '16px' }}>
               <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: tierInfo.colors.primary, color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: `0 4px 10px ${tierInfo.colors.primary}40` }}><Star size={28}/></div>
@@ -442,7 +444,7 @@ const Membership = () => {
               </div>
             </div>
             
-            <h5 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: '#1E293B', fontWeight: 700 }}>{tierInfo.id === 3 ? 'Keuntungan Eksklusif Tier Ini:' : 'Keuntungan Tier Ini:'}</h5>
+            <h5 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: '#1E293B', fontWeight: 700 }}>{tierInfo.id === 3 ? 'Member Benefit Eksklusif Tier Ini:' : 'Member Benefit Tier Ini:'}</h5>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.75rem' }}>
               {tierInfo.benefits.map((benefit, idx) => (
                 <div key={idx} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
@@ -528,6 +530,36 @@ const Membership = () => {
                 style={{ flex: 1, background: '#EF4444', color: 'white', border: 'none', padding: '0.8rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)' }}
               >
                 Ya, Keluar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Password Change Confirmation Modal */}
+      {showPasswordConfirmModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.65)', zIndex: 110, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', backdropFilter: 'blur(4px)' }}>
+          <div className="animate-fade-in" style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '340px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#FEF3C7', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#F59E0B', marginBottom: '1rem' }}>
+              <AlertTriangle size={28} />
+            </div>
+            <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.2rem', fontWeight: 700 }}>Konfirmasi Ganti Password</h3>
+            <p style={{ margin: '0 0 1.5rem 0', color: '#64748B', fontSize: '0.85rem', lineHeight: 1.5 }}>
+              Anda akan memperbarui kata sandi akun Anda. Setelah disimpan, Anda harus menggunakan kata sandi baru saat login kembali. Lanjutkan?
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
+              <button 
+                onClick={() => setShowPasswordConfirmModal(false)} 
+                style={{ flex: 1, padding: '0.8rem', background: '#F1F5F9', color: '#64748B', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}
+              >
+                Batal
+              </button>
+              <button 
+                disabled={isSaving} 
+                onClick={executeSaveProfile} 
+                style={{ flex: 1, padding: '0.8rem', background: '#3B82F6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.9rem', cursor: isSaving ? 'not-allowed' : 'pointer', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)' }}
+              >
+                {isSaving ? 'Menyimpan...' : 'Ya, Simpan'}
               </button>
             </div>
           </div>

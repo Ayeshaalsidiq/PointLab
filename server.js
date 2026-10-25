@@ -10,6 +10,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import rateLimit from 'express-rate-limit';
 
 import webRoutes from './routes/webRoutes.js';
 import apiRoutes from './routes/apiRoutes.js';
@@ -22,6 +23,18 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Rate limiter untuk rute autentikasi
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 menit
+  max: 30, // 30 percobaan per 15 menit
+  message: {
+    message: 'Terlalu banyak percobaan autentikasi. Silakan coba lagi setelah beberapa menit.',
+    code: 'AUTH_RATE_LIMIT_EXCEEDED'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
 
 // Middleware
 const allowedOrigins = [
@@ -72,7 +85,10 @@ app.get('/api/health', (req, res) => {
   return res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
-// 1. Lapisan API MVC (Mendukung /api/api/*, /api/*, dan Path Gateway Kroombox)
+// 1. Rate limiter pada endpoint autentikasi
+app.use(['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/auth/login', '/auth/register'], authLimiter);
+
+// 2. Lapisan API MVC (Mendukung /api/api/*, /api/*, dan Path Gateway Kroombox)
 app.use('/api/api', apiRoutes);
 app.use('/api', apiRoutes);
 app.use('/', apiRoutes);

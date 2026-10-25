@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, User, Phone, IdCard, CheckSquare, Square, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import logoNgolab from '../assets/logo-ngolab.png';
 import { useUser } from '../context/UserContext';
@@ -272,10 +272,25 @@ const Auth = () => {
 
           {/* Password */}
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
               <label style={{ color: '#94A3B8', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                 PASSWORD
               </label>
+              {isLogin && (
+                <Link
+                  to="/forgot-password"
+                  style={{
+                    color: '#FF7A03',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    textDecoration: 'none'
+                  }}
+                  onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                  onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                >
+                  Lupa Password?
+                </Link>
+              )}
             </div>
             <div style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', left: '0.875rem', top: '50%', transform: 'translateY(-50%)', color: '#475569' }}>

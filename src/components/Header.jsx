@@ -1,17 +1,18 @@
 import { useState } from 'react';
-import { LogOut, AlertTriangle } from 'lucide-react';
+import { LogOut, AlertTriangle, QrCode } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 
 const Header = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
   const navigate = useNavigate();
-  const { logout } = useUser();
+  const { user, logout } = useUser();
 
   const handleLogout = () => {
     logout();
     setShowLogoutConfirm(false);
-    navigate('/auth');
+    window.location.href = '/auth';
   };
 
   return (
@@ -20,44 +21,118 @@ const Header = () => {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        padding: '1.5rem', 
+        padding: '1.25rem 1.5rem', 
         background: 'var(--bg-base)',
         color: 'white',
-        width: '100%'
+        width: '100%',
+        borderBottom: '1px solid rgba(255,255,255,0.05)'
       }}>
-        <div style={{ width: '24px' }}></div> {/* Spacer for centering */}
-        <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, fontFamily: 'Poppins' }}>Point<span style={{ color: '#FF7A03' }}>Lab.</span></h1>
+        {/* Brand */}
+        <div onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+          <h1 style={{ fontSize: '1.35rem', fontWeight: 700, margin: 0, fontFamily: 'Poppins' }}>Point<span style={{ color: '#FF7A03' }}>Lab.</span></h1>
+        </div>
         
-        <button 
-          onClick={() => setShowLogoutConfirm(true)}
+        {/* Center / Right Quick Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* QR Member Shortcut */}
+          <button
+            onClick={() => setShowQRModal(true)}
+            title="Tampilkan QR Member"
+            style={{
+              background: 'rgba(255, 122, 3, 0.12)',
+              border: '1px solid rgba(255, 122, 3, 0.25)',
+              color: '#FF7A03',
+              cursor: 'pointer',
+              padding: '0.45rem 0.85rem',
+              borderRadius: '99px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 122, 3, 0.22)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 122, 3, 0.12)'}
+          >
+            <QrCode size={16} />
+            <span>QR Member</span>
+          </button>
+
+          {/* Logout Button */}
+          <button 
+            onClick={() => setShowLogoutConfirm(true)}
+            title="Keluar Akun"
+            style={{ 
+              background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#EF4444', 
+              cursor: 'pointer', padding: '0.5rem', borderRadius: '50%', 
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+          >
+            <LogOut size={18} />
+          </button>
+        </div>
+      </header>
+
+      {/* QR Member Modal */}
+      {showQRModal && (
+        <div 
+          onClick={() => setShowQRModal(false)}
           style={{ 
-            background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#EF4444', 
-            cursor: 'pointer', padding: '0.5rem', borderRadius: '50%', 
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
-            transition: 'background 0.2s'
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+            background: 'rgba(0,0,0,0.65)', zIndex: 9999, 
+            display: 'flex', justifyContent: 'center', alignItems: 'center', 
+            padding: '1.5rem', backdropFilter: 'blur(5px)' 
           }}
         >
-          <LogOut size={20} />
-        </button>
-      </header>
+          <div 
+            className="animate-fade-in" 
+            onClick={(e) => e.stopPropagation()} 
+            style={{ 
+              background: 'white', borderRadius: '24px', padding: '2rem', 
+              width: '100%', maxWidth: '320px', display: 'flex', 
+              flexDirection: 'column', alignItems: 'center', 
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' 
+            }}
+          >
+            <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E293B', fontSize: '1.25rem', fontWeight: 700 }}>QR Member</h3>
+            <div style={{ fontSize: '0.8rem', color: '#64748B', marginBottom: '1rem', fontWeight: 600 }}>
+              {user?.rfid_tag_id ? `RFID: ${user.rfid_tag_id}` : (user?.memberCode ? `KODE: ${user.memberCode}` : `ID: ${user?.id || 'MEMBER'}`)}
+            </div>
+            <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <QrCode size={180} color="#1E293B" />
+              <span style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#94A3B8', fontFamily: 'monospace', letterSpacing: '1px' }}>
+                {user?.rfid_tag_id || user?.memberCode || user?.id || 'POINTLAB-001'}
+              </span>
+            </div>
+            <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#64748B', textAlign: 'center', lineHeight: 1.5 }}>
+              Tunjukkan kode QR atau tap kartu RFID ini ke kasir WarmingUp untuk mengumpulkan poin dan mendapatkan diskon.
+            </p>
+            <button 
+              onClick={() => setShowQRModal(false)} 
+              style={{ width: '100%', padding: '0.85rem', background: '#1E293B', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0, 0, 0, 0.6)',
-          backdropFilter: 'blur(5px)',
-          zIndex: 9999,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: '1.5rem'
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 9999,
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          backdropFilter: 'blur(4px)'
         }}>
           <div style={{
             background: 'white',
             borderRadius: '24px',
-            width: '100%',
+            width: '90%',
             maxWidth: '320px',
             padding: '2rem 1.5rem',
             display: 'flex',

@@ -11,6 +11,30 @@ const Dashboard = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [showToast, setShowToast] = useState(false);
+  const [redeemingId, setRedeemingId] = useState(null);
+
+  const hotPromos = (promos && promos.length > 0) ? promos.slice(0, 3) : [
+    { id: 'p1', name: 'Ayam Bakar Madu Spesial', title: 'Ayam Bakar Madu Spesial', coin_cost: 200, badge: 'FAVORIT' },
+    { id: 'p2', name: 'Beli Ayam Gratis Es Teh Jumbo', title: 'Beli Ayam Gratis Es Teh Jumbo', coin_cost: 400, badge: 'BEST DEAL' },
+    { id: 'p3', name: 'Diskon Rp 10.000 WarmingUp', title: 'Diskon Rp 10.000 WarmingUp', coin_cost: 200, badge: 'HOT PROMO' },
+  ];
+
+  const handleRedeemDirect = async (promo) => {
+    const cost = promo.coin_cost ?? promo.required_points ?? promo.points ?? 200;
+    if (points < cost) {
+      alert(`Poin Anda (${points.toLocaleString('id-ID')}) belum mencukupi untuk menukar ${promo.name || promo.title} (${cost.toLocaleString('id-ID')} Poin).`);
+      return;
+    }
+    setRedeemingId(promo.id);
+    try {
+      await redeemPromo(promo.id);
+      setShowToast(true);
+    } catch (err) {
+      alert(err.message || 'Gagal menukarkan voucher.');
+    } finally {
+      setRedeemingId(null);
+    }
+  };
 
   useEffect(() => {
     if (activeTab !== 'Promo') return;
@@ -89,28 +113,6 @@ const Dashboard = () => {
               />
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0.5rem 2.5rem 0.5rem', overflowX: 'auto', flexShrink: 0 }}>
-        <div onClick={() => navigate('/tier-details')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8', background: 'rgba(255,255,255,0.05)' }}>
-            <Trophy size={20} />
-          </div>
-          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>Member<br/>Package</span>
-        </div>
-        <div onClick={() => setShowQRModal(true)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8', background: 'rgba(255,255,255,0.05)' }}>
-            <QrCode size={20} />
-          </div>
-          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>QR</span>
-        </div>
-        <div onClick={() => navigate('/history')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', minWidth: '70px', transition: 'transform 0.2s' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#94A3B8', background: 'rgba(255,255,255,0.05)' }}>
-            <History size={20} />
-          </div>
-          <span style={{ color: 'white', fontSize: '0.75rem', textAlign: 'center' }}>Riwayat<br/>Poin</span>
         </div>
       </div>
 
@@ -202,20 +204,22 @@ const Dashboard = () => {
                         </p>
                       </div>
 
-                      <button style={{ 
-                        background: 'linear-gradient(90deg, #FFFFFF 0%, #F8FAFC 100%)', 
-                        color: '#6B21A8', 
-                        border: 'none', 
-                        padding: '0.7rem 1.25rem', 
-                        borderRadius: '12px', 
-                        fontWeight: 700, 
-                        cursor: 'pointer', 
-                        fontSize: '0.8rem', 
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
-                        width: 'fit-content',
-                        position: 'relative',
-                        zIndex: 1
-                      }}>
+                      <button 
+                        onClick={() => window.open(import.meta.env.VITE_NGOLAB_GAMI_URL || 'http://localhost:3000', '_blank')}
+                        style={{ 
+                          background: 'linear-gradient(90deg, #FFFFFF 0%, #F8FAFC 100%)', 
+                          color: '#6B21A8', 
+                          border: 'none', 
+                          padding: '0.7rem 1.25rem', 
+                          borderRadius: '12px', 
+                          fontWeight: 700, 
+                          cursor: 'pointer', 
+                          fontSize: '0.8rem', 
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+                          width: 'fit-content',
+                          position: 'relative',
+                          zIndex: 1
+                        }}>
                         Main Sekarang
                       </button>
                     </div>
@@ -247,20 +251,22 @@ const Dashboard = () => {
                         </p>
                       </div>
 
-                      <button style={{ 
-                        background: '#1A1B27', 
-                        color: 'white', 
-                        border: 'none', 
-                        padding: '0.7rem 1.25rem', 
-                        borderRadius: '12px', 
-                        fontWeight: 700, 
-                        cursor: 'pointer', 
-                        fontSize: '0.8rem', 
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                        width: 'fit-content',
-                        position: 'relative',
-                        zIndex: 1
-                      }}>
+                      <button 
+                        onClick={() => navigate('/redeem')}
+                        style={{ 
+                          background: '#1A1B27', 
+                          color: 'white', 
+                          border: 'none', 
+                          padding: '0.7rem 1.25rem', 
+                          borderRadius: '12px', 
+                          fontWeight: 700, 
+                          cursor: 'pointer', 
+                          fontSize: '0.8rem', 
+                          boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                          width: 'fit-content',
+                          position: 'relative',
+                          zIndex: 1
+                        }}>
                         Klaim Diskon
                       </button>
                     </div>
@@ -292,7 +298,10 @@ const Dashboard = () => {
                   <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.25rem' }}>Main Game di Ngolab Gami</h4>
                   <p style={{ fontSize: '0.75rem', color: '#64748B' }}>Dapatkan hingga 500 poin/hari.</p>
                 </div>
-                <button style={{ background: '#FF7A03', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <button 
+                  onClick={() => window.open(import.meta.env.VITE_NGOLAB_GAMI_URL || 'http://localhost:3000', '_blank')}
+                  style={{ background: '#FF7A03', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                >
                   Main
                 </button>
               </div>
@@ -303,10 +312,13 @@ const Dashboard = () => {
                   <MessageCircle size={28} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.25rem' }}>Isi Survey Harian</h4>
-                  <p style={{ fontSize: '0.75rem', color: '#64748B' }}>Bantu kami berkembang & dapatkan 150 poin.</p>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.25rem' }}>Isi Survey & Feedback</h4>
+                  <p style={{ fontSize: '0.75rem', color: '#64748B' }}>Bantu kami berkembang & berikan feedback Anda.</p>
                 </div>
-                <button style={{ background: '#1E293B', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <button 
+                  onClick={() => navigate('/feedback')}
+                  style={{ background: '#1E293B', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                >
                   Mulai
                 </button>
               </div>
@@ -315,32 +327,93 @@ const Dashboard = () => {
         )}
 
         {activeTab === 'Use' && (
-          <div className="tab-content" style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#F8FAFC', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 1.5rem', color: '#FF7A03' }}>
-                <Gift size={40} />
+          <div className="tab-content" style={{ padding: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 0.25rem 0', color: '#1E293B' }}>Rekomendasi Tukar Poin</h3>
+                <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748B' }}>Tukarkan poin loyalty Anda dengan promo favorit.</p>
               </div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#1E293B' }}>Tukar Poin</h3>
-              <p style={{ fontSize: '0.85rem', color: '#64748B', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-                Lihat semua hadiah dan voucher yang bisa ditukarkan dengan poin Anda.
-              </p>
               <button 
                 onClick={() => navigate('/redeem')}
-                style={{ 
-                  padding: '0.75rem 2rem', 
-                  background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '12px', 
-                  fontWeight: 700, 
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 15px rgba(255, 122, 3, 0.3)',
-                  fontSize: '0.9rem'
-                }}
+                style={{ background: 'transparent', border: 'none', color: '#FF7A03', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}
               >
-                Lihat Semua Hadiah
+                Lihat Semua &rarr;
               </button>
             </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.25rem' }}>
+              {hotPromos.map((item, idx) => {
+                const cost = item.coin_cost ?? item.required_points ?? item.points ?? 200;
+                const canAfford = points >= cost;
+                return (
+                  <div key={item.id || idx} style={{ 
+                    background: '#F8FAFC', 
+                    borderRadius: '16px', 
+                    padding: '1rem', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    border: '1px solid #E2E8F0',
+                    gap: '0.75rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', minWidth: 0 }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white', flexShrink: 0 }}>
+                        <Gift size={24} />
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
+                          <span style={{ fontSize: '0.65rem', background: '#FEF3C7', color: '#B45309', padding: '0.15rem 0.45rem', borderRadius: '6px', fontWeight: 700 }}>
+                            {item.badge || 'PROMO'}
+                          </span>
+                        </div>
+                        <h4 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: '#1E293B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {item.name || item.title}
+                        </h4>
+                        <span style={{ fontSize: '0.75rem', color: '#FF7A03', fontWeight: 700 }}>
+                          {cost.toLocaleString('id-ID')} Poin
+                        </span>
+                      </div>
+                    </div>
+                    <button 
+                      disabled={!canAfford || redeemingId === item.id}
+                      onClick={() => handleRedeemDirect(item)}
+                      style={{ 
+                        background: canAfford ? 'linear-gradient(135deg, #FF7A03 0%, #FFA34D 100%)' : '#CBD5E1', 
+                        color: 'white', 
+                        border: 'none', 
+                        padding: '0.5rem 1rem', 
+                        borderRadius: '10px', 
+                        fontSize: '0.75rem', 
+                        fontWeight: 700, 
+                        cursor: canAfford ? 'pointer' : 'not-allowed',
+                        whiteSpace: 'nowrap',
+                        boxShadow: canAfford ? '0 2px 8px rgba(255, 122, 3, 0.3)' : 'none'
+                      }}
+                    >
+                      {redeemingId === item.id ? 'Menukar...' : 'Tukar'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button 
+              onClick={() => navigate('/redeem')}
+              style={{ 
+                width: '100%',
+                padding: '0.8rem', 
+                background: '#F1F5F9', 
+                color: '#475569', 
+                border: 'none', 
+                borderRadius: '12px', 
+                fontWeight: 700, 
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                textAlign: 'center'
+              }}
+            >
+              Buka Katalog Lengkap Voucher Hadiah &rarr;
+            </button>
           </div>
         )}
         </div>

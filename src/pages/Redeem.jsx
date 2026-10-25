@@ -4,11 +4,11 @@ import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 
 const defaultVouchers = [
-  { id: 1, title: 'Voucher Kantin Rp 50.000', points: 5000, type: 'Makanan', jenis: 'Potongan Harga', color: '#F59E0B' },
-  { id: 2, title: 'Cashback Point 20%', points: 2500, type: 'Cashback', jenis: 'Diskon', color: '#10B981' },
-  { id: 3, title: 'Tiket Seminar Gratis', points: 7500, type: 'Edukasi', jenis: 'Free Produk', color: '#3B82F6' },
-  { id: 4, title: 'Voucher Print 100 Lembar', points: 3500, type: 'Fasilitas', jenis: 'Free Produk', color: '#8B5CF6' },
-  { id: 5, title: 'Parkir Gratis 1 Bulan', points: 10000, type: 'Fasilitas', jenis: 'Free Produk', color: '#EC4899' },
+  { id: 'promo-1', title: 'Ayam Bakar Madu Spesial WarmingUp', points: 200, type: 'Makanan', jenis: 'Free Produk', color: '#F59E0B' },
+  { id: 'promo-2', title: 'Beli Ayam Bakar Gratis Es Teh Jumbo', points: 400, type: 'Minuman', jenis: 'Combo Hemat', color: '#10B981' },
+  { id: 'promo-3', title: 'Cashback 20 Poin Nasi Goreng Gila', points: 150, type: 'Cashback', jenis: 'Cashback Koin', color: '#3B82F6' },
+  { id: 'promo-4', title: 'Diskon Rp 10.000 Menu All Item', points: 200, type: 'Voucher', jenis: 'Potongan Harga', color: '#8B5CF6' },
+  { id: 'promo-5', title: 'Gratis 1 Jam Sewa Ruang Belajar Coworking', points: 350, type: 'Fasilitas', jenis: 'Free Akses', color: '#EC4899' },
 ];
 
 const Redeem = () => {
@@ -28,7 +28,7 @@ const Redeem = () => {
       return promos.map((p, idx) => ({
         id: p.id || p.promo_id || idx + 1,
         title: p.title || p.name || p.nama || `Promo Diskon ${p.discount_percent || 10}%`,
-        points: p.required_points || p.points || 1000,
+        points: p.coin_cost ?? p.pointsRequired ?? p.required_points ?? p.points ?? 200,
         type: p.category || p.type || 'Kantin',
         jenis: p.jenis || (p.discount_percent ? `Diskon ${p.discount_percent}%` : 'Potongan Harga'),
         color: ['#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'][idx % 5],
