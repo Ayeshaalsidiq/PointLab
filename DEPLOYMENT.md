@@ -1,72 +1,53 @@
-# Panduan Lengkap Deployment PointLab di Server Kroombox Cloud Panel
-*(Solusi & Analisis Error 404 Berdasarkan Screenshot Server)*
+# Panduan Lengkap Deployment Ekosistem NGOLAB di Server Kroombox Cloud Panel
+### Deployment PointLab (`point.ngolab.online`) & NGOLAB-GAMI (`gami.ngolab.online`)
+*(Berdasarkan Arsitektur Server Lab, Analisis 4 Screenshot Panel, dan Pemecahan Error 404)*
 
-Dokumen ini memuat panduan langkah demi langkah untuk meng-hosting **PointLab** (dan ekosistem integrasi **NGOLAB-GAMI**) pada panel server lab Kroombox Cloud Panel (`panel.kroombox.com/#create_site`) dengan domain target `point.ngolab.online`.
+Dokumen ini memuat panduan komprehensif langkah demi langkah untuk meng-hosting **kedua proyek** pada panel server lab Kroombox Cloud Panel (`panel.kroombox.com/#create_site`):
+1. **PointLab (`point.ngolab.online`)**: Pusat Autentikasi Tunggal (SSO Login & Register), Pengelola Loyalty Points, Database Membership, dan Katalog Penukaran Voucher.
+2. **NGOLAB-GAMI (`gami.ngolab.online`)**: Platform Gamifikasi Mahasiswa, Mini Games Arcade, AI Study Coach, dan Konsumen Voucher Terintegrasi.
 
 ---
 
-## 1. Analisis & Penyebab Utama Terjadinya Error 404
+## 1. Analisis & Akar Masalah Error 404 pada PointLab
 
-Berdasarkan 4 tangkapan layar (screenshot) panel hosting Kroombox yang Anda sediakan, berikut adalah penyebab utama mengapa situs PointLab menampilkan **Error 404 Not Found**:
+Berdasarkan 4 tangkapan layar (screenshot) panel Kroombox Anda, berikut adalah penyebab utama mengapa situs PointLab menampilkan **Error 404 Not Found**:
 
-| No | Lokasi Pengaturan (Screenshot) | Kesalahan Input / Konfigurasi | Dampak / Mengapa 404 |
+| No | Pengaturan di Panel (Screenshot) | Kesalahan Input / Konfigurasi | Solusi & Penjelasan Teknis |
 | :--- | :--- | :--- | :--- |
-| **1** | **Step 4: Backend Folder Location** | Terisi `src/` | `server.js` dan `package.json` berada di **Root Directory (`/`)**, bukan di dalam folder `src/`. Saat Kroombox menjalankan backend, proses Node.js gagal menemukan file entrypoint dan crash. |
-| **2** | **Step 4: Webroot Directory** | Terisi `dist` | `vite.config.js` PointLab awalnya menghasilkan output build ke folder `public`. Karena Nginx Kroombox mencari file di folder `dist`, file `index.html` tidak ditemukan sehingga Nginx menampilkan HTTP 404. *(Catatan: Saat ini sudah kami tambahkan plugin auto-sync agar folder `dist/` dan `public/` selalu terisi keduanya).* |
-| **3** | **Step 3: Relational Database** | Toggle Database **OFF (Abu-abu / Tidak Aktif)** | `PointLab/server.js` menjalankan `initDb()` pada saat startup. Tanpa koneksi database MySQL dan tanpa file `.env` yang berisi kredensial DB, server backend akan error / gagal berjalan. |
-| **4** | **Nginx Web Server Routing** | Belum ada SPA Rewrite Rule | PointLab menggunakan React SPA (`react-router-dom`). Jika pengunjung mengakses URL `/auth`, `/dashboard`, atau `/membership`, Nginx membutuhkan konfigurasi `try_files $uri $uri/ /index.html;` agar tidak menganggap rute tersebut sebagai folder fisik. |
+| **1** | **Step 4: Backend Folder Location** | Terisi `src/` | `server.js` dan `package.json` berada di **Root Directory (`/`)**, bukan di `src/`. Akibatnya proses Node.js gagal menemukan file entrypoint dan crash saat dijalankan. Ubah menjadi `/` atau `.`. |
+| **2** | **Step 4: Webroot Directory** | Terisi `dist` | `vite.config.js` PointLab awalnya menghasilkan output build ke `public/`. Nginx Kroombox mencari file di `dist/` sehingga melempar HTTP 404. Saat ini kami telah menambahkan plugin sinkronisasi otomatis agar folder `dist/` dan `public/` selalu terisi keduanya. |
+| **3** | **Step 3: Relational Database** | Toggle Database **OFF (Abu-abu)** | `PointLab/server.js` menjalankan `initDb()` saat startup. Tanpa MySQL yang aktif dan `.env` yang terisi, backend crash karena gagal terhubung ke database. Aktifkan MySQL dan isi `.env`. |
+| **4** | **Nginx Web Server Routing** | Tanpa SPA Rewrite Rule | PointLab menggunakan React SPA (`react-router-dom`). Saat membuka `/auth`, `/dashboard`, atau `/membership`, Nginx membutuhkan `try_files $uri $uri/ /index.html;` agar tidak menganggap rute tersebut sebagai folder fisik di disk. |
 
 ---
 
-## 2. Pilihan Arsitektur Deployment di Kroombox
+## 2. BAGIAN I: Deployment Proyek PointLab (`point.ngolab.online`)
 
-Terdapat dua cara deploy di Kroombox:
+PointLab berfungsi sebagai backend server sekaligus frontend manajemen poin & autentikasi terpusat.
 
-### Rekomendasi: Gunakan **Metode A (Single Service / Monolith Node.js)**
-PointLab sudah dirancang dengan arsitektur Monolith modern di `server.js`:
-- Menyajikan API REST (`/api/*`).
-- Menyajikan static file frontend React (`dist/` & `public/`).
-- Memiliki fallback SPA bawaan (`app.use(...)` -> `index.html`).
-- **Keuntungan:** Tidak perlu membagi frontend & backend, bebas dari konflik port gateway Nginx, dan anti-404.
-
-Jika Anda tetap ingin menggunakan arsitektur **Metode B (Fullstack Multi-Service 2-in-1)**, ikuti panduan detail di bawah.
-
----
-
-## 3. Langkah Demi Langkah Pengisian Form Kroombox (Step-by-Step)
-
-### Step 1: Basic Information (Screenshot 1)
+### Step 1: Basic Information
 1. **Domain Name**: `point.ngolab.online`
 2. **Framework / Environment**: Pilih `Node.js`
 3. **Node.js Version**: Pilih `v20.x` (LTS)
 4. Klik **Next**
 
----
-
-### Step 2: Source Code (Screenshot 2)
+### Step 2: Source Code
 1. **Repository Type**: Pilih `Git / GitHub`
-2. **Repository URL**: Masukkan URL repository PointLab Anda (misal: `https://github.com/REzaa13x/PointLab.git`)
-3. **Branch**: `main` (atau branch tempat rilis terbaru Anda)
-4. **Auto-Deploy on Git Push**: Aktifkan (ON) agar setiap update otomatis dideploy
+2. **Repository URL**: Masukkan URL Git PointLab (misal: `https://github.com/Ayeshaalsidiq/PointLab.git`)
+3. **Branch**: `Udin`
+4. **Auto-Deploy on Git Push**: Aktifkan (ON)
 5. Klik **Next**
 
----
+### Step 3: Database MySQL & Environment Variables
 
-### Step 3: Database & Environment Variables (Screenshot 3)
-
-#### A. Mengaktifkan Database MySQL (PENTING)
+#### A. Mengaktifkan Database MySQL
 1. Geser toggle **"Use Relational Database"** ke **ON (Hijau / Aktif)**.
 2. Tipe Database: Pilih **MySQL 8.0** (atau **MySQL 5.7**).
-3. Buat nama database, misalnya: `gesture_eats` (atau nama DB yang disediakan Kroombox).
-4. Catat kredensial:
-   - **DB Host**: `localhost` (atau `127.0.0.1` / host internal Kroombox)
-   - **DB Port**: `3306`
-   - **DB Name**: `gesture_eats`
-   - **DB User**: (sesuai yang dibuat di panel)
-   - **DB Password**: (sesuai yang dibuat di panel)
+3. Buat nama database: `gesture_eats` (atau nama DB yang disediakan Kroombox).
+4. Catat kredensial DB (Host, Port, User, Password).
 
-#### B. Mengisi Environment Variables (.env)
-Pada kolom **Environment Variables**, isi konfigurasi berikut:
+#### B. Mengisi Environment Variables (.env) PointLab
+Pada kolom **Environment Variables**, masukkan konfigurasi berikut:
 
 ```env
 PORT=3000
@@ -74,8 +55,8 @@ NODE_ENV=production
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_NAME=gesture_eats
-DB_USER=root
-DB_PASSWORD=password_database_anda
+DB_USER=kroombox_db_user
+DB_PASSWORD=kroombox_db_password
 JWT_SECRET=ngolab_secret_key_pointlab_2026
 VITE_POINTLAB_URL=https://point.ngolab.online
 VITE_POINTLAB_AUTH_URL=https://point.ngolab.online/auth
@@ -85,145 +66,183 @@ ALLOWED_ORIGINS=https://gami.ngolab.online,https://point.ngolab.online,http://lo
 
 5. Klik **Next**
 
----
-
-### Step 4: Build & Deployment Settings (Screenshot 4)
+### Step 4: Build & Deployment Settings PointLab
 
 Pilih salah satu metode berikut:
 
----
-
-### METODE A: Single Service / Monolith (DIREKOMENDASIKAN)
-
-1. **Project Architecture Type**: Pilih radio button **Single Service / Monolith**.
-2. **Root / Working Directory**: Biarkan default `/` (atau `.`).
-3. **Install Command**:
-   ```bash
-   npm install
-   ```
-4. **Build Command**:
-   ```bash
-   npm run build
-   ```
-5. **Start Command / Entry File**:
-   ```bash
-   node server.js
-   ```
-   *(atau isi Entry File: `server.js`)*
-6. **Port**: `3000`
+#### OPSI A: Single Service / Monolith (SANGAT DIREKOMENDASIKAN)
+Metode ini paling stabil karena file [`server.js`](file:///f:/College/PABW/Ngolab/PointLab/server.js) sudah menyajikan static frontend SPA, API backend, dan fallback anti-404 secara terpadu:
+* **Project Architecture Type**: Pilih **Single Service / Monolith**
+* **Root / Working Directory**: `/` (atau `.`)
+* **Install Command**:
+  ```bash
+  npm install
+  ```
+* **Build Command**:
+  ```bash
+  npm run build
+  ```
+* **Start Command / Entry File**:
+  ```bash
+  node server.js
+  ```
+  *(atau isi Entry File: `server.js`)*
+* **Port**: `3000`
 
 ---
 
-### METODE B: Fullstack Multi-Service (2-in-1)
+#### OPSI B: Fullstack Multi-Service (2-in-1)
+Jika memilih radio button **Fullstack Multi-Service (2-in-1)** seperti pada screenshot 4:
+* **Frontend Settings**:
+  * Frontend Code Folder Location: `/` (atau `.` — **JANGAN diisi `src/`!**)
+  * Frontend Install Command: `npm install`
+  * Frontend Build Command: `npm run build`
+  * Webroot Directory / Static Files: `dist` *(atau `public`)*
+* **Backend Settings**:
+  * Backend Code Folder Location: `/` (atau `.` — **JANGAN diisi `src/`!**)
+  * Backend Install Command: `npm install`
+  * Backend Entry File: `server.js`
+  * Backend Port: `3000`
+  * Gateway Route Prefix: `/api`
 
-Jika Anda memilih radio button **Fullstack Multi-Service (2-in-1)** seperti pada Screenshot 4:
-
-#### 1. Pengaturan Frontend:
-- **Frontend Code Folder Location**: Isi `/` atau `.` *(JANGAN diisi `src/`!)*
-- **Frontend Install Command**: `npm install`
-- **Frontend Build Command**: `npm run build`
-- **Webroot Directory / Static Files**: Isi `dist` *(atau `public`, keduanya kini otomatis tersinkron)*
-
-#### 2. Pengaturan Backend:
-- **Backend Code Folder Location**: Isi `/` atau `.` *(JANGAN diisi `src/`!)*
-- **Backend Install Command**: `npm install`
-- **Backend Entry File**: `server.js`
-- **Backend Port**: `3000`
-- **Gateway Route Prefix**: `/api`
-
----
-
-## 4. Import Database SQL (Data Akun & Poin)
-
-Setelah website dan database MySQL dibuat di Kroombox:
-1. Buka menu **Database** atau **phpMyAdmin** di panel Kroombox.
-2. Pilih database `gesture_eats`.
-3. Buka tab **Import**.
-4. Pilih file dump SQL yang sudah kami sediakan di dalam repository PointLab:
-   - Lokasi file: `ngola_geasture_adm_dump.sql` (atau `gesture_eats_SQL_dump.sql`).
-5. Klik **Go / Import**.
-6. Seluruh tabel akun (`users`), poin (`coins`), promo (`promos`), menu (`menus`), dan loyalty akan terisi data awal resmi.
+### Step 5: Import Database SQL PointLab
+1. Buka menu **Database** atau **phpMyAdmin** di Kroombox.
+2. Buka database `gesture_eats`.
+3. Buka tab **Import**, pilih file dump resmi yang sudah tersedia di repository PointLab:
+   * File: `ngola_geasture_adm_dump.sql` (atau `gesture_eats_SQL_dump.sql`).
+4. Klik **Go / Import**. Semua tabel `users`, `coins`, `promos`, `menus`, dan `loyalty_accounts` akan terisi data awal.
 
 ---
 
-## 5. Konfigurasi Nginx (Anti Error 404 SPA)
+## 3. BAGIAN II: Deployment Proyek NGOLAB-GAMI (`gami.ngolab.online`)
 
-Jika setelah dideploy halaman utama bisa dibuka namun saat membuka `/auth` atau `/dashboard` langsung muncul 404 Nginx, tambahkan blok konfigurasi ini di menu **Site Settings -> Nginx Configuration / Reverse Proxy**:
+NGOLAB-GAMI merupakan aplikasi web React + Vite yang dilengkapi server proxy Study Coach AI di [`server/index.mjs`](file:///f:/College/PABW/Ngolab/NGOLAB-GAMI/server/index.mjs).
 
+### Step 1: Basic Information
+1. Klik **Create Website** baru di panel Kroombox.
+2. **Domain Name**: `gami.ngolab.online`
+3. **Framework / Environment**: Pilih `Node.js`
+4. **Node.js Version**: Pilih `v20.x` (LTS)
+5. Klik **Next**
+
+### Step 2: Source Code
+1. **Repository Type**: Pilih `Git / GitHub`
+2. **Repository URL**: Masukkan URL Git NGOLAB-GAMI (misal: `https://github.com/rizkynurdiansyahrn/NGOLAB-GAMI.git`)
+3. **Branch**: `Udin`
+4. **Auto-Deploy on Git Push**: Aktifkan (ON)
+5. Klik **Next**
+
+### Step 3: Database & Environment Variables NGOLAB-GAMI
+* **"Use Relational Database"**: Biarkan **OFF (Abu-abu)**. NGOLAB-GAMI tidak mengakses MySQL secara langsung; semua data akun, poin, dan voucher diakses melalui API PointLab (`https://point.ngolab.online`).
+* **Environment Variables (.env)**:
+  ```env
+  PORT=3001
+  NODE_ENV=production
+  VITE_API_BASE_URL=https://point.ngolab.online
+  VITE_POINTLAB_URL=https://point.ngolab.online
+  VITE_POINTLAB_AUTH_URL=https://point.ngolab.online/auth
+  VITE_VOUCHER_URL=https://point.ngolab.online/promo
+  RAG_API_URL=https://rag.aiones.app/api/v1
+  RAG_API_KEY=
+  ```
+  *(Isi `RAG_API_KEY` jika menggunakan layanan AI Study Coach RAG).*
+
+### Step 4: Build & Deployment Settings NGOLAB-GAMI
+* **Project Architecture Type**: Pilih **Single Service / Monolith**
+* **Root / Working Directory**: `/` (atau `.`)
+* **Install Command**:
+  ```bash
+  npm install
+  ```
+* **Build Command**:
+  ```bash
+  npm run build
+  ```
+* **Start Command / Entry File**:
+  ```bash
+  node server/index.mjs
+  ```
+* **Port**: `3001`
+* Klik **Deploy / Create Site**
+
+---
+
+## 4. Konfigurasi Nginx Web Server (Reverse Proxy & Anti-404 SPA)
+
+Jika panel Kroombox menggunakan Nginx sebagai reverse proxy gateway ke aplikasi Node.js Anda:
+
+### A. Konfigurasi Nginx untuk PointLab (`point.ngolab.online`)
+Buka **Site Settings -> Nginx Configuration**:
 ```nginx
-# 1. Routing Static SPA React (Mencegah 404 pada reload halaman /auth, /dashboard, /promo)
-location / {
-    root /www/wwwroot/point.ngolab.online/dist; # sesuaikan path direktori di server
-    try_files $uri $uri/ /index.html;
-    index index.html;
-}
+server {
+    server_name point.ngolab.online;
 
-# 2. Reverse Proxy untuk REST API
-location /api/ {
-    proxy_pass http://127.0.0.1:3000/api/;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
+    # 1. Routing Static SPA React (Mencegah 404 saat refresh rute /auth, /dashboard, dll.)
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 
-# 3. Static Uploads (Avatar & Gambar Menu)
-location /uploads/ {
-    proxy_pass http://127.0.0.1:3000/uploads/;
+    # 2. Reverse Proxy untuk REST API
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 }
 ```
 
-> **Catatan:** Jika menggunakan **Metode A (Monolith)**, Nginx cukup mem-proxy seluruh request ke `http://127.0.0.1:3000`, karena Express di `server.js` sudah memiliki fallback SPA otomatis.
+### B. Konfigurasi Nginx untuk NGOLAB-GAMI (`gami.ngolab.online`)
+Buka **Site Settings -> Nginx Configuration**:
+```nginx
+server {
+    server_name gami.ngolab.online;
+
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
 
 ---
 
-## 6. Aktifkan SSL / HTTPS (Let's Encrypt)
+## 5. Konfigurasi SSL / HTTPS (Let's Encrypt)
 
-Agar alur SSO redirect antara `gami.ngolab.online` dan `point.ngolab.online` berjalan mulus tanpa peringatan keamanan browser:
-1. Masuk ke menu **SSL** pada domain `point.ngolab.online` di Kroombox.
-2. Centang domain `point.ngolab.online`.
-3. Pilih **Apply Let's Encrypt Free SSL Certificate**.
-4. Centang **Force HTTPS Redirect**.
+Agar alur pertukaran token SSO (`#token=<JWT>`) antara `point.ngolab.online` dan `gami.ngolab.online` tidak diblokir oleh kebijakan keamanan browser (CORS & Mixed Content):
 
----
-
-## 7. Verifikasi Hasil Deployment
-
-Setelah build selesai dan status website **Running**:
-
-1. **Uji Health Check Backend**:
-   Buka di browser:
-   ```
-   https://point.ngolab.online/api/health
-   ```
-   Respons yang benar: `{"status":"UP","timestamp":"..."}`
-
-2. **Uji Halaman Login Resmi PointLab**:
-   Buka di browser:
-   ```
-   https://point.ngolab.online/auth
-   ```
-   Halaman form login & registrasi PointLab harus muncul dengan rapi.
-
-3. **Uji Alur SSO Terpadu dari NGOLAB-GAMI**:
-   Buka URL SSO berikut:
-   ```
-   https://point.ngolab.online/auth?redirect=https%3A%2F%2Fgami.ngolab.online%2F&mode=login
-   ```
-   - Halaman PointLab akan menampilkan badge:
-     `🎮 Terhubung dengan NGOLAB-GAMI (Akun Membership Terpadu)`
-   - Saat Anda login dengan akun member (contoh: NIM `6706210001` / Password `123456`), PointLab akan otomatis mengembalikan Anda ke:
-     `https://gami.ngolab.online/#token=<JWT>`
-   - NGOLAB-GAMI secara otomatis membuka sesi member, menampilkan poin Anda, dan membuka akses seluruh fitur game & study!
+1. Masuk ke menu **SSL** untuk situs `point.ngolab.online` -> Pilih **Apply Let's Encrypt SSL** -> Centang **Force HTTPS**.
+2. Masuk ke menu **SSL** untuk situs `gami.ngolab.online` -> Pilih **Apply Let's Encrypt SSL** -> Centang **Force HTTPS**.
 
 ---
 
-## 8. Ringkasan Checklist Sebelum Klik "Deploy"
+## 6. Verifikasi Alur Pengguna & Aturan Bisnis (End-to-End Testing)
 
-- [x] Backend Code Folder Location diset ke `/` (Bukan `src/`)
-- [x] Frontend Code Folder Location diset ke `/` (Bukan `src/`)
-- [x] Toggle Relational Database diaktifkan (MySQL aktif)
-- [x] Environment variables `.env` sudah diisi (`DB_HOST`, `DB_NAME`, `JWT_SECRET`, dll.)
-- [x] File dump SQL `ngola_geasture_adm_dump.sql` sudah di-import
-- [x] SSL Let's Encrypt sudah diterbitkan untuk `point.ngolab.online`
+Setelah kedua situs berstatus **Running**:
+
+| Langkah Pengujian | Cara Uji | Hasil yang Diharapkan |
+| :--- | :--- | :--- |
+| **1. Health Check PointLab** | Buka `https://point.ngolab.online/api/health` | Mengembalikan JSON: `{"status":"UP","timestamp":"..."}` |
+| **2. Health Check GAMI** | Buka `https://gami.ngolab.online/api/health` | Mengembalikan JSON: `{"status":"UP","timestamp":"..."}` |
+| **3. Homepage Landing** | Buka `https://gami.ngolab.online/` | Tampil halaman utama (Homepage Landing). Pengguna yang belum login melihat katalog game & fitur edukasi. |
+| **4. Proteksi Member (Mini Games & Study)** | Klik tombol **Main** pada kartu game atau **Mulai Belajar** | Pengguna **tidak bisa langsung main** jika belum login, melainkan langsung diarahkan ke `https://point.ngolab.online/auth?redirect=...&mode=login`. |
+| **5. Login Terpadu di PointLab** | Masukkan kredensial member di PointLab (NIM: `6706210001` / Pass: `123456`) | Muncul badge `🎮 Terhubung dengan NGOLAB-GAMI`. Setelah berhasil login, otomatis dialihkan kembali ke `https://gami.ngolab.online/#token=...`. |
+| **6. Dashboard Member Aktif** | Masuk ke NGOLAB-GAMI | Sesi terbuka: Nama member, saldo Loyalty Points, dan seluruh Mini Game dapat dimainkan. |
+| **7. Marketplace & Riwayat Voucher** | Buka tab **Reward** di NGOLAB-GAMI | Muncul katalog voucher F&B kantin dari PointLab, riwayat penukaran voucher aktif, serta tombol buka QR code di PointLab. |
