@@ -13,7 +13,7 @@ import { renderSpaView } from '../helpers/viewHelper.js';
 
 // Helper untuk menemukan member berdasarkan ID atau alias ('me', NIM)
 const resolveMember = async (req) => {
-  let paramId = req.params.id;
+  let paramId = req.params.memberId || req.params.id;
   if (paramId === 'me' || !paramId) {
     paramId = req.userId || 1;
   }

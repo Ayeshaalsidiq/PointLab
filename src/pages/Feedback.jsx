@@ -71,14 +71,14 @@ const Feedback = () => {
         <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: 600, margin: '0 0 1.5rem 0' }}>Berikan Feedback Anda</h3>
 
         {errorMessage && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#FCA5A5', fontSize: '0.85rem', marginBottom: '1rem', padding: '0.75rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '12px' }}>
+          <div role="alert" aria-live="assertive" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#FCA5A5', fontSize: '0.85rem', marginBottom: '1rem', padding: '0.75rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '12px' }}>
             <AlertCircle size={18} color="#EF4444" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {successMessage && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6EE7B7', fontSize: '0.85rem', marginBottom: '1rem', padding: '0.75rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px' }}>
+          <div role="status" aria-live="polite" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6EE7B7', fontSize: '0.85rem', marginBottom: '1rem', padding: '0.75rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px' }}>
             <CheckCircle2 size={18} color="#10B981" />
             <span>{successMessage}</span>
           </div>

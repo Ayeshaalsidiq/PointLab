@@ -41,7 +41,7 @@ const allowedOrigins = [
   'https://gami.ngolab.online',
   'https://point.ngolab.online',
   'http://localhost:3000',
-  'http://localhost:5173'
+  'http://localhost:3001', 'http://localhost:3002', 'http://localhost:5173'
 ];
 
 app.use(cors({
@@ -52,7 +52,7 @@ app.use(cors({
     return callback(null, true); // Izinkan semua untuk development, bisa dibatasi di production
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'Idempotency-Key', 'idempotency-key'],
   credentials: true
 }));
 app.use(express.json());

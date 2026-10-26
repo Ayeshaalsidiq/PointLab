@@ -19,7 +19,7 @@ export const authController = {
   // API Login (Memvalidasi Password Secara Ketat)
   async login(req, res) {
     try {
-      const { identifier, password } = req.body;
+      const identifier = req.body.identifier || req.body.email || req.body.phone_number || req.body.nim; const { password } = req.body;
       if (!identifier || !password) {
         return res.status(400).json({ error: 'NIM/Email dan Password wajib diisi.' });
       }
@@ -71,8 +71,8 @@ export const authController = {
   // API Register
   async register(req, res) {
     try {
-      const { nama, name, nim, email, phone, phone_number, password } = req.body;
-      if (!nim || !password) {
+      const { nama, name, nim, email, phone, phone_number, password } = req.body; const effectiveNim = nim || email || phone || phone_number;
+      if (!effectiveNim || !password) {
         return res.status(400).json({ error: 'NIM dan Password wajib diisi.' });
       }
 
@@ -82,7 +82,7 @@ export const authController = {
 
       const newUser = await userModel.create({
         nama: nama || name,
-        nim,
+        nim: effectiveNim,
         email,
         phone: phone || phone_number,
         password

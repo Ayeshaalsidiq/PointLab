@@ -97,12 +97,13 @@ export const api = {
     return payload;
   },
 
-  async register({ nama, name, nim, phone, phone_number, password }) {
+  async register({ nama, name, nim, email, phone, phone_number, password }) {
     const payload = await apiRequest('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({
         nama: nama || name,
         nim,
+        email,
         phone: phone || phone_number,
         password,
       }),
@@ -132,6 +133,12 @@ export const api = {
   },
 
   async changePassword(currentPassword, newPassword) {
+    if (!currentPassword) {
+      return await apiRequest('/api/users/password', {
+        method: 'PUT',
+        body: JSON.stringify({ password: newPassword, new_password: newPassword }),
+      });
+    }
     return await apiRequest('/api/auth/change-password', {
       method: 'POST',
       body: JSON.stringify({
@@ -144,7 +151,7 @@ export const api = {
   async updatePasswordOnly(newPassword) {
     return await apiRequest('/api/users/password', {
       method: 'PUT',
-      body: JSON.stringify({ password: newPassword }),
+      body: JSON.stringify({ password: newPassword, new_password: newPassword }),
     });
   },
 
@@ -152,12 +159,19 @@ export const api = {
     let body = fileOrFormData;
     if (fileOrFormData instanceof File) {
       const formData = new FormData();
-      formData.append('avatar', fileOrFormData);
+      formData.append('file', fileOrFormData);
       body = formData;
     }
     return await apiRequest('/api/users/avatar', {
       method: 'POST',
       body,
+    });
+  },
+
+  async submitFeedback(feedbackData) {
+    return await apiRequest('/api/auth/feedback', {
+      method: 'POST',
+      body: JSON.stringify(feedbackData),
     });
   },
 
@@ -196,7 +210,7 @@ export const api = {
   async claimPromoCode(code) {
     return await apiRequest('/api/promos/claim-code', {
       method: 'POST',
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ promo_code: code, code }),
     });
   },
 
@@ -240,16 +254,13 @@ export const api = {
   // GET  /api/members/{memberId}/loyalty/balance  -> { currentPoints, balance, totalPoints, tier, allTiers }
   async getLoyaltyBalance(memberId) {
     const data = await apiRequest(`/api/members/${memberId}/loyalty/balance`);
-    // Support: new contract { currentPoints, balance, totalPoints, tier, allTiers }
-    //          legacy { points, coin_balance, totalPoints, tier }
     if (data && typeof data.currentPoints === 'number') return data;
+    if (data && data.data && typeof data.data.currentPoints === 'number') return data.data;
     if (data && typeof data.balance === 'number') return data;
-    // Legacy fallback
     if (data && typeof data.points === 'number') {
       return { currentPoints: data.points, balance: data.coin_balance ?? data.points, totalPoints: data.totalPoints, tier: data.tier };
     }
     if (data && typeof data.memberId !== 'undefined') {
-      // Legacy member object
       return {
         currentPoints: data.poin ?? data.coin_balance ?? 0,
         balance: data.coin_balance ?? data.poin ?? 0,
@@ -285,8 +296,6 @@ export const api = {
   // ==========================================
   async getRewards() {
     const data = await apiRequest('/api/rewards');
-    // Kontrak NGOLAB-GAMI: /api/rewards mengembalikan array hadiah langsung.
-    // Fallback (legacy): { promos: [...], rewards: [...] }
     if (Array.isArray(data)) return { rewards: data };
     if (data && Array.isArray(data.rewards)) return data;
     if (data && Array.isArray(data.promos)) return { rewards: data.promos };
@@ -295,7 +304,6 @@ export const api = {
 
   async getRewardDetail(id) {
     const data = await apiRequest(`/api/rewards/${id}`);
-    // Support: response langsung objek reward, atau { reward: {...}, promo: {...} }
     if (data && data.reward) return data;
     return { reward: data };
   },
@@ -332,4 +340,3 @@ export const api = {
 };
 
 export default api;
-

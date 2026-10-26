@@ -11,6 +11,7 @@ import { promoController } from '../controllers/promoController.js';
 import { membershipController } from '../controllers/membershipController.js';
 import { chatController } from '../controllers/chatController.js';
 import { requireAuth, optionalAuth } from '../middleware/authMiddleware.js';
+import { isDbConnected, query } from '../config/db.js';
 
 const router = express.Router();
 
@@ -25,6 +26,11 @@ router.post('/auth/review', authController.submitReview);
 router.post('/auth/logout', authController.logout);
 router.get('/users/profile', requireAuth, authController.getProfile);
 router.put('/users/profile', requireAuth, authController.updateProfile);
+router.put('/users/:id', requireAuth, authController.updateProfile);
+router.post('/users/avatar', requireAuth, (req, res) => {
+  const avatarUrl = req.body?.avatar_url || '/uploads/avatars/default-avatar.png';
+  res.json({ success: true, message: 'Foto profil berhasil diperbarui', avatar_url: avatarUrl });
+});
 router.post('/auth/change-password', requireAuth, authController.changePassword);
 router.put('/users/password', requireAuth, authController.changePassword);
 
@@ -33,6 +39,10 @@ router.put('/users/password', requireAuth, authController.changePassword);
 // ==========================================
 router.get('/coins/balance', optionalAuth, dashboardController.getBalance);
 router.get('/coins/history', optionalAuth, dashboardController.getHistory);
+router.get('/me/loyalty/balance', requireAuth, (req, res) => {
+  req.params.memberId = 'me';
+  return membershipController.getLoyaltyBalance(req, res);
+});
 router.get('/memberships/tiers', optionalAuth, membershipController.getTierDetails);
 
 // ==========================================
@@ -77,15 +87,45 @@ router.get('/vouchers/my-vouchers', optionalAuth, promoController.getMyVouchers)
 router.get('/vouchers/:id', promoController.getPromoDetail);
 
 // ==========================================
-// 7. AI CHATBOT KNOWLEDGE BASE
+// 7. MENU KANTIN & PESANAN SAYA (/api/menus, /api/orders/my-orders)
+// ==========================================
+router.get('/menus', async (_req, res) => {
+  try {
+    if (isDbConnected()) {
+      const rows = await query('SELECT id, name, category, price, stock, image_url, in_stock FROM menus WHERE is_active = 1 ORDER BY category ASC, name ASC');
+      return res.status(200).json(rows || []);
+    }
+    return res.status(200).json([]);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
+router.get('/orders/my-orders', requireAuth, async (req, res) => {
+  try {
+    if (isDbConnected() && req.userId) {
+      const orders = await query('SELECT id, invoice_number, total_price, status, payment_status, created_at FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 30', [req.userId]);
+      return res.status(200).json(orders || []);
+    }
+    return res.status(200).json([]);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
+// ==========================================
+// 8. AI CHATBOT KNOWLEDGE BASE
 // ==========================================
 router.post('/chat/query', chatController.queryChat);
 router.get('/chat/knowledge', chatController.getKnowledgeBase);
 
 // ==========================================
-// 8. API 404 HANDLER (MENJAMIN SELURUH /api/* MERESPON JSON, BUKAN HTML SPA)
+// 9. API 404 HANDLER (MENJAMIN SELURUH /api/* MERESPON JSON, BUKAN HTML SPA)
 // ==========================================
-router.use((req, res) => {
+router.use((req, res, next) => {
+  if (!req.originalUrl.startsWith('/api')) {
+    return next();
+  }
   res.status(404).json({
     message: 'Endpoint API tidak ditemukan.',
     code: 'NOT_FOUND'

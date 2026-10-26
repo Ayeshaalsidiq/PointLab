@@ -4,15 +4,52 @@ import tier1Card from '../assets/tier1-card.png';
 import tier2Card from '../assets/tier2-card.png';
 import tier3Card from '../assets/tier3-card.png';
 import tier4Card from '../assets/tier4-card.png';
-import api, { getStoredToken } from '../services/api';
+import api, { getStoredToken, setStoredToken } from '../services/api';
 
 const UserContext = createContext();
 
 export const useUser = () => useContext(UserContext);
 
+/**
+ * Ekstrak token SSO dari URL hash (#token=...) atau query (?token=...) saat lintas aplikasi
+ * (mis. dari NGOLAB-GAMI "Buka Voucher Teman" ke PointLab), lalu bersihkan URL di browser.
+ */
+function consumeSsoTokenFromLocation() {
+  if (typeof window === 'undefined' || !window.location) return null;
+  try {
+    const hashRaw = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
+    const hashParams = new URLSearchParams(hashRaw);
+    const hashToken = hashParams.get('token');
+    if (hashToken && hashToken.trim()) {
+      const cleanUrl = `${window.location.pathname}${window.location.search}`;
+      window.history.replaceState(null, '', cleanUrl);
+      const trimmed = hashToken.trim();
+      setStoredToken(trimmed);
+      localStorage.setItem('pointlab_last_activity', Date.now().toString());
+      return trimmed;
+    }
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const queryToken = searchParams.get('token');
+    if (queryToken && queryToken.trim()) {
+      searchParams.delete('token');
+      const remainingSearch = searchParams.toString();
+      const cleanUrl = `${window.location.pathname}${remainingSearch ? `?${remainingSearch}` : ''}${window.location.hash || ''}`;
+      window.history.replaceState(null, '', cleanUrl);
+      const trimmed = queryToken.trim();
+      setStoredToken(trimmed);
+      localStorage.setItem('pointlab_last_activity', Date.now().toString());
+      return trimmed;
+    }
+  } catch {
+    // Abaikan kegagalan parsing URL
+  }
+  return null;
+}
+
 export const UserProvider = ({ children }) => {
   const navigate = useNavigate();
-  const [token, setToken] = useState(() => getStoredToken());
+  const [token, setToken] = useState(() => consumeSsoTokenFromLocation() || getStoredToken());
   const [memberId, setMemberId] = useState(() => {
     const saved = localStorage.getItem('pointlab_member_id');
     return saved || null;
@@ -172,24 +209,24 @@ export const UserProvider = ({ children }) => {
     }
   }, [points]);
 
-  // Refresh Profil Pengguna
+  // Refresh Profil Pengguna (mendukung format { user } maupun objek profil langsung dari backend_ngolab)
   const refreshProfile = useCallback(async () => {
     const activeToken = getStoredToken();
     if (!activeToken) return null;
 
     try {
       const res = await api.getProfile();
-      if (res && res.user) {
-        setUser(res.user);
-        // Simpan memberId (dari kontrak NGOLAB-GAMI) atau fallback ke user.id
-        const mid = res.user.memberId || res.user.id || res.user.userId;
+      const profileUser = res?.user || (res?.id ? res : null);
+      if (profileUser) {
+        setUser(profileUser);
+        const mid = profileUser.memberId || profileUser.id || profileUser.userId;
         if (mid) {
           setMemberId(mid);
           localStorage.setItem('pointlab_member_id', mid);
         }
-        const pts = res.user.coin_balance ?? res.user.currentPoints ?? 0;
+        const pts = profileUser.currentPoints ?? profileUser.coin_balance ?? profileUser.poin ?? 0;
         setPoints(pts);
-        return res.user;
+        return profileUser;
       }
     } catch (err) {
       console.warn('Gagal memperbarui profil pengguna dari backend:', err.message);
@@ -208,29 +245,27 @@ export const UserProvider = ({ children }) => {
     return null;
   }, []);
 
-  // Refresh Saldo Koin & Riwayat
+  // Refresh Saldo Koin & Riwayat (mendukung array langsung dari backend_ngolab maupun objek { history })
   const refreshCoinData = useCallback(async () => {
     const activeToken = getStoredToken();
     if (!activeToken) return;
 
-    // Priority: loyalty balance endpoint (NGOLAB-GAMI kontrak baru)
-    if (memberId) {
+    const storedMid = memberId || localStorage.getItem('pointlab_member_id');
+    if (storedMid) {
       try {
-        const loyaltyRes = await api.getLoyaltyBalance(memberId);
+        const loyaltyRes = await api.getLoyaltyBalance(storedMid);
         if (loyaltyRes && typeof loyaltyRes.currentPoints === 'number') {
           setPoints(loyaltyRes.currentPoints);
         } else if (loyaltyRes && typeof loyaltyRes.balance === 'number') {
           setPoints(loyaltyRes.balance);
         }
       } catch (err) {
-        console.warn('Gagal mengambil loyalty balance, fallback ke coin balance:', err.message);
-        // Fallback ke endpoint lama
         try {
           const balRes = await api.getCoinBalance();
-          if (balRes && typeof balRes.coin_balance === 'number') {
+          if (balRes && typeof balRes.current_points === 'number') {
+            setPoints(balRes.current_points);
+          } else if (balRes && typeof balRes.coin_balance === 'number') {
             setPoints(balRes.coin_balance);
-          } else if (balRes && typeof balRes.currentPoints === 'number') {
-            setPoints(balRes.currentPoints);
           } else if (balRes && typeof balRes.points === 'number') {
             setPoints(balRes.points);
           }
@@ -239,10 +274,11 @@ export const UserProvider = ({ children }) => {
         }
       }
     } else {
-      // Fallback: legacy coin balance endpoint
       try {
         const balRes = await api.getCoinBalance();
-        if (balRes && typeof balRes.coin_balance === 'number') {
+        if (balRes && typeof balRes.current_points === 'number') {
+          setPoints(balRes.current_points);
+        } else if (balRes && typeof balRes.coin_balance === 'number') {
           setPoints(balRes.coin_balance);
         } else if (balRes && typeof balRes.currentPoints === 'number') {
           setPoints(balRes.currentPoints);
@@ -258,22 +294,26 @@ export const UserProvider = ({ children }) => {
 
     try {
       const histRes = await api.getCoinHistory();
-      if (histRes && Array.isArray(histRes.history)) {
+      if (Array.isArray(histRes)) {
+        setCoinHistory(histRes);
+      } else if (histRes && Array.isArray(histRes.history)) {
         setCoinHistory(histRes.history);
       }
     } catch (err) {
       console.warn('Gagal mengambil riwayat koin:', err.message);
     }
-  }, []);
+  }, [memberId]);
 
-  // Refresh Daftar Voucher Saya
+  // Refresh Daftar Voucher Saya (mendukung array langsung maupun { vouchers })
   const refreshVouchers = useCallback(async () => {
     const activeToken = getStoredToken();
     if (!activeToken) return;
 
     try {
       const res = await api.getMyVouchers();
-      if (res && Array.isArray(res.vouchers)) {
+      if (Array.isArray(res)) {
+        setRedeemedVouchers(res);
+      } else if (res && Array.isArray(res.vouchers)) {
         setRedeemedVouchers(res.vouchers);
       }
     } catch (err) {
@@ -281,11 +321,13 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
-  // Refresh Katalog Promo
+  // Refresh Katalog Promo (mendukung array langsung maupun { promos })
   const refreshPromos = useCallback(async () => {
     try {
       const res = await api.getPromos();
-      if (res && Array.isArray(res.promos)) {
+      if (Array.isArray(res)) {
+        setPromos(res);
+      } else if (res && Array.isArray(res.promos)) {
         setPromos(res.promos);
       }
     } catch (err) {
@@ -293,14 +335,16 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
-  // Refresh Riwayat Pesanan Saya
+  // Refresh Riwayat Pesanan Saya (mendukung array langsung maupun { orders })
   const refreshOrders = useCallback(async () => {
     const activeToken = getStoredToken();
     if (!activeToken) return;
 
     try {
       const res = await api.getMyOrders();
-      if (res && Array.isArray(res.orders)) {
+      if (Array.isArray(res)) {
+        setMyOrders(res);
+      } else if (res && Array.isArray(res.orders)) {
         setMyOrders(res.orders);
       }
     } catch (err) {
@@ -383,18 +427,17 @@ export const UserProvider = ({ children }) => {
       }
       if (res.user) {
         setUser(res.user);
-        // Simpan memberId dari respons backend (kontrak NGOLAB-GAMI)
         const mid = res.user.memberId || res.user.id || res.user.userId;
         if (mid) {
           setMemberId(mid);
           localStorage.setItem('pointlab_member_id', mid);
         }
-        const pts = res.user.coin_balance ?? res.user.currentPoints ?? 0;
+        const pts = res.user.currentPoints ?? res.user.coin_balance ?? 0;
         setPoints(pts);
       }
       localStorage.setItem('pointlab_last_activity', Date.now().toString());
-      // Ambil data terbaru
       await Promise.allSettled([
+        refreshProfile(),
         refreshCoinData(),
         refreshVouchers(),
         refreshOrders(),
@@ -415,63 +458,72 @@ export const UserProvider = ({ children }) => {
       }
       if (res.user) {
         setUser(res.user);
-        // Simpan memberId dari respons backend (kontrak NGOLAB-GAMI)
         const mid = res.user.memberId || res.user.id || res.user.userId;
         if (mid) {
           setMemberId(mid);
           localStorage.setItem('pointlab_member_id', mid);
         }
-        const pts = res.user.coin_balance ?? res.user.currentPoints ?? 0;
+        const pts = res.user.currentPoints ?? res.user.coin_balance ?? 0;
         setPoints(pts);
       }
       localStorage.setItem('pointlab_last_activity', Date.now().toString());
+      await Promise.allSettled([
+        refreshProfile(),
+        refreshCoinData(),
+        refreshVouchers(),
+      ]);
       return res;
     } finally {
       setLoading(false);
     }
   };
 
-  // Method Redeem Promo (NGOLAB-GAMI kontrak: POST /api/members/{memberId}/rewards/{rewardId}/redeem)
+  // Method Redeem Promo (mendukung baik coin_promos /api/promos/redeem maupun rewards /api/members/:memberId/rewards/:rewardId/redeem)
   const redeemPromo = async (promoId) => {
     let res;
-    if (memberId) {
-      // Kontrak baru: gunakan endpoint member-based yang atomic
+    const isCoinPromo = String(promoId || '').startsWith('cp-');
+    if (isCoinPromo) {
+      res = await api.redeemPromo(promoId);
+    } else if (memberId) {
       try {
         res = await api.redeemReward(memberId, promoId);
       } catch (err) {
-        console.warn('redeemReward gagal, fallback ke redeemPromoLegacy:', err.message);
-        res = await api.redeemPromoLegacy(promoId);
+        console.warn('redeemReward gagal, fallback ke redeemPromo:', err.message);
+        res = await api.redeemPromo(promoId);
       }
     } else {
-      // Fallback: legacy endpoint
-      res = await api.redeemPromoLegacy(promoId);
+      res = await api.redeemPromo(promoId);
     }
 
-    // Support both response formats:
-    // New: { redemptionId, rewardName, redemptionCode, remainingPoints }
-    // Legacy: { message, voucher, remainingPoints, current_balance }
-    if (res.redemptionCode) {
+    if (res.voucher) {
+      setRedeemedVouchers(prev => [res.voucher, ...prev]);
+    } else if (res.redemptionCode || res.voucher_code) {
+      const code = res.redemptionCode || res.voucher_code;
       setRedeemedVouchers(prev => [{
-        code: res.redemptionCode,
-        voucher_code: res.redemptionCode,
+        code,
+        voucher_code: code,
         title: res.rewardName || 'Voucher',
         isUsed: false,
         status: 'unused',
       }, ...prev]);
-    } else if (res.voucher) {
-      setRedeemedVouchers(prev => [res.voucher, ...prev]);
     }
 
-    // Update poin — support both formats
-    const newPoints = typeof res.remainingPoints === 'number'
-      ? res.remainingPoints
-      : (typeof res.current_balance === 'number' ? res.current_balance : null);
+    const newPoints =
+      typeof res.remainingPoints === 'number'
+        ? res.remainingPoints
+        : typeof res.remaining_coins === 'number'
+          ? res.remaining_coins
+          : typeof res.current_balance === 'number'
+            ? res.current_balance
+            : null;
+
     if (newPoints !== null) {
       setPoints(newPoints);
     } else {
       refreshCoinData();
     }
     refreshVouchers();
+    refreshCoinData();
     return res;
   };
 

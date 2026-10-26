@@ -2,10 +2,16 @@ import { Trophy, Zap, MessageCircle, ShoppingBag, Coffee, Gamepad2, QrCode, Tick
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import { buildReturnUrl } from '../lib/ssoRedirect';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, points, tierInfo, promos, redeemedVouchers, redeemPromo } = useUser();
+  const { token, user, points, tierInfo, promos, redeemedVouchers, redeemPromo } = useUser();
+  const openGamiApp = () => {
+    const baseGamiUrl = import.meta.env.VITE_NGOLAB_GAMI_URL || 'http://localhost:3001';
+    const targetUrl = token ? buildReturnUrl(baseGamiUrl, token) : baseGamiUrl;
+    window.open(targetUrl, '_blank', 'noopener');
+  };
   const [activeTab, setActiveTab] = useState('Promo');
   const [activeBanner, setActiveBanner] = useState(0);
   const [showQRModal, setShowQRModal] = useState(false);
@@ -205,7 +211,7 @@ const Dashboard = () => {
                       </div>
 
                       <button 
-                        onClick={() => window.open(import.meta.env.VITE_NGOLAB_GAMI_URL || 'http://localhost:3000', '_blank')}
+                        onClick={openGamiApp}
                         style={{ 
                           background: 'linear-gradient(90deg, #FFFFFF 0%, #F8FAFC 100%)', 
                           color: '#6B21A8', 
@@ -299,7 +305,7 @@ const Dashboard = () => {
                   <p style={{ fontSize: '0.75rem', color: '#64748B' }}>Dapatkan hingga 500 poin/hari.</p>
                 </div>
                 <button 
-                  onClick={() => window.open(import.meta.env.VITE_NGOLAB_GAMI_URL || 'http://localhost:3000', '_blank')}
+                  onClick={openGamiApp}
                   style={{ background: '#FF7A03', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
                 >
                   Main
