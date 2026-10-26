@@ -155,6 +155,23 @@ const Auth = () => {
               ? 'Masuk dengan akun PointLab Anda. Terintegrasi penuh dengan Kantin & Ngolab Gami.' 
               : 'Daftarkan diri Anda untuk mulai mengumpulkan poin dan menukarkan voucher eksklusif.'}
           </p>
+          {readRedirectParam() && isAllowedRedirect(readRedirectParam()) && (
+            <div style={{
+              marginTop: '0.6rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              background: 'rgba(255, 122, 3, 0.12)',
+              border: '1px solid rgba(255, 122, 3, 0.3)',
+              borderRadius: '8px',
+              padding: '0.35rem 0.6rem',
+              fontSize: '0.72rem',
+              color: '#FF9E40',
+              fontWeight: 600
+            }}>
+              <span>🎮 Terhubung dengan NGOLAB-GAMI (Akun Membership Terpadu)</span>
+            </div>
+          )}
         </div>
 
         {/* Error Notification */}
