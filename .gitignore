@@ -8,7 +8,9 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
+# dist/ SENGAJA ikut di-commit: webroot default panel Kroombox adalah `dist`. Bila langkah
+# `npm run build` di panel gagal (mis. versi Node terlalu lama), situs tetap punya berkas statis
+# dan tidak berakhir 404. Dibuat ulang otomatis oleh plugin sync-dist-output (vite.config.js).
 dist-ssr
 *.local
 
